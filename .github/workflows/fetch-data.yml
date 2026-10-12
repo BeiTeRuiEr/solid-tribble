@@ -29,6 +29,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 必须给超时:2026-10-07 那次 deploy job 卡在 waiting 状态整整 5 天,
+    # 一直占着下面的 pages 并发组,导致之后 39 次定时运行全被取消(看板断更)。
+    # 加了超时后,卡住的 job 最多拖 X 分钟就会自己失败,不再堵住后面的运行。
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -103,6 +107,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10   # 同上:别让 deploy 卡住堵死整个并发组
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
