@@ -1,1 +1,4 @@
+# 日常取数走纯 requests 重放 BI 接口,只有重新抓模板时才需要浏览器
+requests>=2.31
+cryptography>=42
 playwright==1.63.0
