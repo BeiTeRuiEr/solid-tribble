@@ -49,13 +49,44 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('scripts/requirements.txt') }}
 
+      # 判定本次抓什么(要提前知道,才能决定装不装浏览器):
+      # 不用 github.event_name / github.event.schedule 判断:实测本仓库的定时(cron)运行
+      # 被 GitHub 报成 workflow_dispatch,inputs 还会被填上默认值,导致每次都跑成 both,
+      # 降频完全失效。改成看 runner 的 UTC 小时,简单且确定。
+      #   UTC 18 点(北京 02:00)→ daily:只抓「门店每日数据」1 张表
+      #   其它小时          → main :只抓主页面 6 张表,不碰 daily.json
+      # 「门店每日数据」是全表最大(307 行,约占 7 表总量 62%),而曲线只需要它的历史点
+      # (今日点已改由门店表「今日业绩」列实时提供,随 10 分钟一刷更新),所以降到每天一次。
+      - name: Detect fetch mode
+        run: |
+          H=$(date -u +%H)
+          if [ -n "$MODE_OVERRIDE" ]; then
+            M="$MODE_OVERRIDE"
+          elif [ "$H" = "18" ]; then
+            M=daily
+          else
+            M=main
+          fi
+          echo "FETCH_MODE=$M" >> "$GITHUB_ENV"
+          echo "UTC 小时=$H → FETCH_MODE=$M"
+
       - name: Install deps
         run: |
           pip install -r scripts/requirements.txt
-          # 浏览器已命中缓存时此步只补系统依赖,秒级完成;未命中才完整下载
-          playwright install --with-deps chromium
+          # 浏览器按需装:main 模式是纯接口重放,根本不开浏览器,装了也白装
+          # (--with-deps 要 apt 装一堆系统库,固定 1 分多钟,runner 每次都是全新机器没法缓存)。
+          # 只有 daily/both 模式(daily 页要重抓模板)才需要。main 模式万一模板失效,
+          # 由下面 Fetch tables 的 fallback 步骤现装浏览器重试。
+          if [ "$FETCH_MODE" != "main" ]; then
+            echo "daily/both 模式 → 安装 Chromium"
+            playwright install --with-deps chromium
+          else
+            echo "main 模式 → 跳过浏览器安装"
+          fi
 
       - name: Fetch tables
+        id: fetch
+        continue-on-error: true # 失败不直接判死,给 fallback 一个装浏览器重试的机会
         env:
           BI_USER: ${{ secrets.BI_USER }}
           BI_PASS: ${{ secrets.BI_PASS }}
@@ -65,27 +96,18 @@ jobs:
           # 例外:每日业绩页的日期区间是「抓模板那一刻」由页面 URL 上的 end_date 钉死的,
           # 重放改不动(2026-10-12 起日期不再出现在请求体里),所以 daily 模式会先花约 20 秒
           # 用当天的 URL 重抓一次该页模板再取数 —— 每天只跑一次,可以接受。
-          # 万一接口重放失败(模板过期等),脚本会自己开浏览器重抓一次完整模板;
-          # 仍失败才退回老方案 fetch_data_dom.py(读 DOM),保证看板不断数。
-          # ── 判定本次抓什么 ──
-          # 不用 github.event_name / github.event.schedule 判断:实测本仓库的定时(cron)运行
-          # 被 GitHub 报成 workflow_dispatch,inputs 还会被填上默认值,导致每次都跑成 both,
-          # 降频完全失效。改成看 runner 的 UTC 小时,简单且确定。
-          #   UTC 18 点(北京 02:00)→ daily:只抓「门店每日数据」1 张表
-          #   其它小时          → main :只抓主页面 6 张表,不碰 daily.json
-          H=$(date -u +%H)
-          if [ -n "$MODE_OVERRIDE" ]; then
-            FETCH_MODE="$MODE_OVERRIDE"
-          elif [ "$H" = "18" ]; then
-            FETCH_MODE=daily
-          else
-            FETCH_MODE=main
-          fi
-          export FETCH_MODE
-          echo "UTC 小时=$H → FETCH_MODE=$FETCH_MODE"
-          echo "FETCH_MODE=$FETCH_MODE" >> "$GITHUB_ENV"
-          # 「门店每日数据」是全表最大(235 行,约占 7 表总量 62%),而曲线只需要它的历史点
-          # (今日点已改由门店表「今日业绩」列实时提供,随 10 分钟一刷更新),所以降到每天一次。
+          python scripts/fetch_data.py
+
+      # 兜底:快路径失败(模板失效/取数缺表)时,装上浏览器完整重试一遍;
+      # 重放方案失败再退回老方案 fetch_data_dom.py(读 DOM),保证看板不断数。
+      - name: Fallback (install browser and retry)
+        if: steps.fetch.outcome != 'success'
+        env:
+          BI_USER: ${{ secrets.BI_USER }}
+          BI_PASS: ${{ secrets.BI_PASS }}
+        run: |
+          echo "快路径失败 → 安装浏览器后重试"
+          playwright install --with-deps chromium
           python scripts/fetch_data.py || python scripts/fetch_data_dom.py
 
       - name: Commit data
