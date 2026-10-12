@@ -201,6 +201,14 @@ def patch_date(body, key, new_date):
     return pat.sub((key + "=" + new_date).encode(), body), True
 
 
+def page_url_for_today(url, today=None):
+    """把报表页 URL 里的 end_date 换成今天(抓模板时用,决定取数区间)"""
+    today = today or _today()
+    if "end_date=" in url:
+        return re.sub(r"end_date=\d{4}-\d{2}-\d{2}", "end_date=" + today, url)
+    return url
+
+
 # ---------------------------------------------------------------- 纯 API 登录
 
 def fetch_rsa_key():
@@ -388,19 +396,28 @@ def name_of(header, pool):
     return None
 
 
-def build_session(user, pwd, log=print):
-    """抓两个页面的模板并写成 bi_session.json(需要账号密码 + 浏览器)"""
+def build_session(user, pwd, log=print, only=None):
+    """抓报表页模板并写成 bi_session.json(需要账号密码 + 浏览器)。
+
+    only:只重抓指定页面(如 "daily"),其余沿用已有模板。每日业绩页必须每天重抓
+    一次 —— 它的日期区间是抓模板时由页面 URL 上的 end_date 决定的。
+    """
     sess = load_session() or {}
     try:
         sess["rsa_public_key"] = fetch_rsa_key()
     except Exception as e:
         log("  [capture] 取 RSA 公钥失败:%s" % str(e)[:60])
 
+    old_pages = sess.get("pages") or {}
     pages = {}
     for key, url, pool in (("main", MAIN_URL, ["门店数据", "咨询数据", "医生数据",
                                                "网电数据", "市场数据", "老带新数据"]),
                            ("daily", DAILY_URL_WITH_DATES.format(end=_today()),
                             ["门店每日数据"])):
+        if only and key != only:
+            if key in old_pages:
+                pages[key] = old_pages[key]
+            continue
         log("[capture] 抓 %s 页面模板 …" % key)
         pg = capture_page(user, pwd, url, log=log)
         # 给取数请求按表头命名
@@ -463,6 +480,10 @@ def fetch_page(page, cookies, today=None, timeout=30, log=print, max_chunks=40):
 
     流程:preamble 顺序发(建立服务端缓存实例)→ data 并发发 → 大表按
     topOffset 翻页补全(服务端每次只给约 100 行,fIdx 是全局行号,按行号合并)。
+
+    注意:日期区间是「抓模板那一刻」由页面 URL 决定的,重放改不了
+    (2026-10-12 起日期不再出现在请求体里)。所以每日业绩页要拿到今天的区间,
+    就必须先用带当天日期的 URL 重抓一次模板 —— 见 build_session(only="daily")。
     """
     today = today or _today()
     items = page["items"]
@@ -474,19 +495,22 @@ def fetch_page(page, cookies, today=None, timeout=30, log=print, max_chunks=40):
     s.cookies.update(cookies)
     s.headers.update({"User-Agent": HEADERS["User-Agent"]})
 
+    def prep(it):
+        """解出请求体并做必要的参数改写(日期是等长替换,改不动时原样返回)"""
+        body, _ = patch_date(decomp_item(it), "end_date", today)
+        return body
+
     t0 = time.time()
     for it in preamble:
-        body, _ = patch_date(decomp_item(it), "end_date", today)
         try:
-            _post(s, it.get("url") or DATA_URL, body, timeout)
+            _post(s, it.get("url") or DATA_URL, prep(it), timeout)
         except Exception as e:
             log("  [warn] preamble 请求失败(继续):%s" % str(e)[:60])
     dt_pre = time.time() - t0
 
     def one(it):
         t = time.time()
-        body, _ = patch_date(decomp_item(it), "end_date", today)
-        raw = _post(s, it.get("url") or DATA_URL, body, timeout)
+        raw = _post(s, it.get("url") or DATA_URL, prep(it), timeout)
         grid, tbl = table_of(raw)
         return it, grid, tbl, time.time() - t
 
@@ -504,7 +528,7 @@ def fetch_page(page, cookies, today=None, timeout=30, log=print, max_chunks=40):
         # 有翻页模板且首屏已满 100 行 → 说明还有后续块,继续翻
         n = len(grid)
         if chunk:
-            base = decomp_item(chunk)
+            base = prep(chunk)
             offset = max(grid) + 1
             for _ in range(max_chunks):
                 try:

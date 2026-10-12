@@ -139,6 +139,18 @@ def main():
         print("[模板] 没有可用模板 → 开浏览器抓一次(约 30~60s,之后就都不用了)")
         sess = bi_api.build_session(user, pwd)
 
+    # 每日业绩报表(2026-10-12 起不再弹参数框)的日期区间,是抓模板时由页面 URL 上的
+    # end_date 决定的,重放改不动(日期不在请求体里,替换实例 id 实测也不稳定)。
+    # 所以每次抓 daily 之前先用「今天」的 URL 重抓一次该页模板(约 30~40s,每天只跑一次)。
+    if any(k == "daily" for k, _ in pages):
+        t_cap = time.time()
+        try:
+            print("[模板] 重抓 daily 页模板(end_date=%s)…" % bi_api._today())
+            sess = bi_api.build_session(user, pwd, only="daily")
+            print("[模板] 完成 %.2fs" % (time.time() - t_cap))
+        except Exception as e:
+            print("[模板] 重抓失败,沿用旧模板:%s" % str(e)[:120])
+
     for attempt in (1, 2):
         t_login = time.time()
         try:
