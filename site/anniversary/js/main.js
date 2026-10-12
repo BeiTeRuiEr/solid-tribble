@@ -355,20 +355,30 @@
         return [x * U(), (y - H.VB_Y) * U()];
       }
       function tipHTML(s) {
-        const actual = actualOf(s),
-          sprint = sprintOf(s.targetBase);
-        /* 平均单体：BI 原生列（元/人）；占位门店无此数据 → 显示 — */
+        /* 2026-10-12 需求：弹窗精简为「剩余业绩 / 剩余日均业绩 / 剩余初诊 /
+           剩余日均初诊 / 平均单体」—— 前四项是 BI 门店表原生列（data.js 直取），
+           原 实收·基础 / 冲刺目标·完成 / 累计初诊·初诊完成率 三行已删除。 */
         const avgRow =
           s.avgTicket != null && s.avgTicket > 0
             ? `<div><span class="col">平均单体</span><b>${fmtI(s.avgTicket)}</b> 元</div>`
             : `<div><span class="col">平均单体</span><b>—</b></div>`;
+        const remRev =
+          s.remainRev != null
+            ? `<div><span class="col">剩余业绩</span><b>${s.remainRev.toFixed(2)}</b> 万
+              <span class="col">· 剩余日均</span><b>${
+                s.remainRevDaily != null ? s.remainRevDaily.toFixed(2) : "—"
+              }</b> 万</div>`
+            : `<div><span class="col">剩余业绩</span><b>—</b></div>`;
+        const remInit =
+          s.remainInit != null
+            ? `<div><span class="col">剩余初诊</span><b>${fmtI(s.remainInit)}</b> 人
+              <span class="col">· 剩余日均</span><b>${
+                s.remainInitDaily != null ? fmtI(s.remainInitDaily) : "—"
+              }</b> 人</div>`
+            : `<div><span class="col">剩余初诊</span><b>—</b></div>`;
         return `<div class="hd"><span class="dot" style="background:${s.color}"></span>${s.name}</div>
-          <div><span class="col">实收</span><b>${actual.toFixed(2)}</b> 万
-            <span class="col">/ 基础 ${s.targetBase.toFixed(2)} 万</span></div>
-          <div><span class="col">冲刺目标</span><b>${sprint.toFixed(0)}</b> 万
-            <span class="col">· 完成</span><b>${s.revPct.toFixed(2)}%</b></div>
-          <div><span class="col">累计初诊</span><b>${fmtI(initActualOf(s))}</b> 人
-            <span class="col">· 初诊完成率</span><b>${s.initPct.toFixed(2)}%</b></div>
+          ${remRev}
+          ${remInit}
           ${avgRow}`;
       }
       SEGMENTS.slice(0, STORES.length).forEach((seg, i) => {

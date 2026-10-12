@@ -123,6 +123,13 @@
         initActual: num(r["初诊到诊"]), // 人
         initPct: num(r["初诊完成率"]), // %
         avgTicket: num(r["平均单体"]), // 平均单体（元，BI 原生列）
+        /* 剩余四项（2026-10-12 起 BI 门店表原生列，单位已算好，直接取）：
+           剩余业绩/剩余日均业绩（万、万/天），剩余初诊/剩余日均初诊（人、人/天）。
+           天数/日均的分母口径由 BI 端决定，前端不重复计算。 */
+        remainRev: num(r["剩余业绩"]),
+        remainRevDaily: num(r["剩余日均业绩"]),
+        remainInit: num(r["剩余初诊"]),
+        remainInitDaily: num(r["剩余日均初诊"]),
         /* 今日业绩（万）：门店表的实时列，10 分钟一刷。
            daily.json 每天只在凌晨抓一次，今日那格会是 0/陈旧值，
            所以曲线最后一个点用这里覆盖，历史点仍来自 daily。 */
@@ -140,6 +147,10 @@
         biName: s.name,
         avgTicket: null,
         todayRev: null, // BI 无此店 → 今日点仍走 daily
+        remainRev: null, // 占位店无剩余指标 → tooltip 显示 —
+        remainRevDaily: null,
+        remainInit: null,
+        remainInitDaily: null,
         actual: (s.targetBase * s.revPct) / 100,
         initActual: (s.initBase * s.initPct) / 100,
       });
