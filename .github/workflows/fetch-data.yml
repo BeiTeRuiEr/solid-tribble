@@ -96,8 +96,13 @@ jobs:
           # -X theirs = 冲突时采用本次运行的数据(rebase 中 theirs 指本运行的新提交):
           # 两次运行都整文件重写 JSON(含 updated_at),必然内容冲突,自动合并解不掉,
           # 必须显式给策略,否则 rebase 卡死整次运行失败。后完成者数据更新,以其为准。
-          git pull --rebase -X theirs origin main
-          git push
+          # 推送也可能被别人(比如我本地的一次 push)抢先:ref 锁冲突会让整次运行失败,
+          # 所以重试 3 次,每次先 rebase 再推。
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && break
+            echo "第 $i 次推送失败,5 秒后重试"
+            sleep 5
+          done
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
