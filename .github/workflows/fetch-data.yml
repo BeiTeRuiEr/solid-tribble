@@ -78,16 +78,11 @@ jobs:
       - name: Install deps
         run: |
           pip install -r scripts/requirements.txt
-          # 浏览器按需装:main 模式是纯接口重放,根本不开浏览器,装了也白装
-          # (--with-deps 要 apt 装一堆系统库,固定 1 分多钟,runner 每次都是全新机器没法缓存)。
-          # 只有 daily/both 模式(daily 页要重抓模板)才需要。main 模式万一模板失效,
-          # 由下面 Fetch tables 的 fallback 步骤现装浏览器重试。
-          if [ "$FETCH_MODE" != "main" ]; then
-            echo "daily/both 模式 → 安装 Chromium"
-            playwright install --with-deps chromium
-          else
-            echo "main 模式 → 跳过浏览器安装"
-          fi
+          # 浏览器必须常装(2026-10-13 起):main 模式虽然只做接口重放,但每次都要先开一次
+          # 浏览器重抓模板 —— BI 把结果缓存在「抓模板时的报表实例」上,重放旧模板永远是旧快照
+          # (实测数字能落后好几小时)。chromium 走 Cache Playwright browsers 缓存,
+          # 装依赖约 18 秒(以前 main 模式跳过安装省下的时间,换来的是数据不新鲜)。
+          playwright install --with-deps chromium
 
       - name: Fetch tables
         id: fetch
@@ -96,11 +91,11 @@ jobs:
           BI_USER: ${{ secrets.BI_USER }}
           BI_PASS: ${{ secrets.BI_PASS }}
         run: |
-          # 新方案:重放 BI 自己的 action=req 接口(模板在 scripts/bi_session.json),
-          # 不用开浏览器/等渲染/滚滚动条,单次约 2 秒(老方案约 145 秒),且不漏行。
-          # 例外:每日业绩页的日期区间是「抓模板那一刻」由页面 URL 上的 end_date 钉死的,
-          # 重放改不动(2026-10-12 起日期不再出现在请求体里),所以 daily 模式会先花约 20 秒
-          # 用当天的 URL 重抓一次该页模板再取数 —— 每天只跑一次,可以接受。
+          # 新方案:重放 BI 自己的 action=req 接口(模板在 scripts/bi_session.json) —— 比老方案
+          # (开浏览器读 DOM,约 145 秒)快得多,也不受虚拟滚动影响、不漏行。
+          # 但每次都要先花约 20~30 秒重抓一次模板:BI 把结果缓存在抓模板时创建的报表实例上,
+          # 重放旧模板只会拿到旧快照(2026-10-13 实测数字落后好几小时),详见脚本内注释。
+          # daily 模式还会用当天的 URL 重抓每日业绩页(它的日期区间钉在实例上)。
           python scripts/fetch_data.py
 
       # 兜底:快路径失败(模板失效/取数缺表)时,装上浏览器完整重试一遍;
