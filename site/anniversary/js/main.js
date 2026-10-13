@@ -86,6 +86,16 @@
        * ══════════════════════════════════════════════════════════ */
       const T = CAMPAIGN.today,
         D = CAMPAIGN.monthDays;
+      /* 活动窗口的真实日期（data.js 由 BI「天数」列 + 今天反推）：X 轴 / tooltip / 标题都用它，
+         活动跨月时页面自动跟着走，不再写死月份。 */
+      const DAYS = CAMPAIGN.days || [];
+      const mdAt = (i) => DAYS[i] || { m: CAMPAIGN.month, d: i + 1 };
+      const dayLabel = (i) => `${mdAt(i).m}/${mdAt(i).d}`;
+      const dayFull = (i) => `${mdAt(i).m}月${mdAt(i).d}日`;
+      const campMonth = `${CAMPAIGN.year}年${CAMPAIGN.month}月`;
+      $("subTitle").textContent = `13周年庆数据看板 · ${campMonth}`;
+      $("heroTitle").textContent = `${campMonth} · 门店业绩达成`;
+      $("trendTag").textContent = `${dayFull(0)} – ${dayFull(D - 1)} · 万元`;
       const sumOf = (arr, fn) => arr.reduce((a, x) => a + fn(x), 0);
       const totalBase = DATA.totals.totalBase;
       const totalRev = DATA.totals.totalRev;
@@ -587,7 +597,9 @@
       const trendSvg = $("trendSvg");
       trendSvg.setAttribute("viewBox", `0 0 ${TW} ${TH}`);
       const xAt = (i) => PAD_L + (i * PLOT_W) / (D - 1);
-      let MAXV = Math.ceil((Math.max(...dailyAll) * 1.15) / 5) * 5; // 心跳后可能重算升档
+      /* 纵轴量程：留 15% 余量并向上取 5 的倍数；下限 5 万 —— 活动刚开月、
+         daily 还没抓到数据时窗口内全为 0，除以 0 会让整条曲线变成 NaN */
+      let MAXV = Math.max(5, Math.ceil((Math.max(...dailyAll) * 1.15) / 5) * 5); // 心跳后可能重算升档
       const yAt = (v) => PAD_T + (1 - v / MAXV) * PLOT_H;
 
       function drawGrid() {
@@ -597,9 +609,12 @@
           html += `<line class="grid-ln" x1="${PAD_L}" y1="${y}" x2="${TW - PAD_R}" y2="${y}" />`;
           html += `<text class="axis-txt" x="${PAD_L - 8}" y="${+y + 5}" text-anchor="end">${Math.round(MAXV * k)}</text>`;
         });
-        [1, 5, 10, 15, 20, 25, 30].forEach((d) => {
-          html += `<text class="axis-txt" x="${xAt(d - 1).toFixed(1)}" y="${TH - 6}" text-anchor="middle">9/${d}</text>`;
-        });
+        /* 刻度按活动日下标取（第 1/5/10/15/20/25/30 天），文字用真实日期 M/D */
+        [0, 4, 9, 14, 19, 24, 29]
+          .filter((i) => i < D)
+          .forEach((i) => {
+            html += `<text class="axis-txt" x="${xAt(i).toFixed(1)}" y="${TH - 6}" text-anchor="middle">${dayLabel(i)}</text>`;
+          });
         html += `<text class="axis-txt" x="${PAD_L - 8}" y="${yAt(MAXV) + 5}" text-anchor="end">万</text>`;
         $("tGrid").innerHTML = html;
       }
@@ -743,7 +758,7 @@
           hDot.setAttribute("cy", y);
           hDot.setAttribute("stroke", se.color);
           tip.style.display = "block";
-          tip.innerHTML = `9月${i + 1}日 · <b>${se.data[i].toFixed(1)}</b> 万<br>累计 <b>${se.cum[i].toFixed(1)}</b> 万 · ${se.name}`;
+          tip.innerHTML = `${dayFull(i)} · <b>${se.data[i].toFixed(1)}</b> 万<br>累计 <b>${se.cum[i].toFixed(1)}</b> 万 · ${se.name}`;
           const tw = tip.offsetWidth / SCALE;
           tip.style.left = x + (i > (D * 2) / 3 ? -tw - 16 : 16) + "px";
           tip.style.top = clamp(y - 30, 4, TH - 60) + "px";
@@ -890,7 +905,7 @@
 
       /* 底部折线：序列整体替换 + 260~700ms 插值；量程变档时重建网格 */
       function updateTrend(m, animate) {
-        const newMax = Math.ceil((Math.max(...m.daily.all) * 1.15) / 5) * 5;
+        const newMax = Math.max(5, Math.ceil((Math.max(...m.daily.all) * 1.15) / 5) * 5);
         const rescaled = newMax !== MAXV;
         MAXV = newMax;
         SERIES.all.data = m.daily.all;

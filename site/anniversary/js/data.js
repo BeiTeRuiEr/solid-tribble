@@ -101,6 +101,12 @@
 
   const num = (v) => (v === "" || v == null || isNaN(+v) ? 0 : +v);
 
+  /* 当前北京时间：页面跑在浏览器里，用本机时间 + 时区偏移换算，避免看的人时区不同导致活动窗口算错 */
+  function cnNow() {
+    const now = new Date();
+    return new Date(now.getTime() + (480 + now.getTimezoneOffset()) * 60000);
+  }
+
   function buildModel(storesRaw, consultsRaw, doctorsRaw, chanRaws, dailyRaw, groupsRaw) {
     /* ── 活动进程：BI"天数/时间进度"列 = 第 N 天 / 共 30 天 ── */
     const D = 30;
@@ -108,6 +114,23 @@
       D,
       Math.max(1, Math.round(num(storesRaw.rows[0] && storesRaw.rows[0]["天数"])) || 28),
     );
+    /* ── 活动窗口（动态，2026-10-13 起）──
+       BI 门店表的「天数」列 = 活动第几天（第 1 天 = 活动首日）。用「今天(北京) − (T-1) 天」
+       反推首日，于是：活动跨月/跨年时页面自动跟着走，不再写死 9 月。
+       D（30 天）只用于坐标轴长度与「时间进度」环，与 BI「共 30 天」一致。 */
+    const firstDate = cnNow();
+    firstDate.setDate(firstDate.getDate() - (T - 1));
+    const dayDates = [];
+    for (let i = 0; i < D; i++) {
+      const dt = new Date(firstDate.getTime());
+      dt.setDate(firstDate.getDate() + i);
+      dayDates.push({ y: dt.getFullYear(), m: dt.getMonth() + 1, d: dt.getDate() });
+    }
+    const CAMPAIGN_START = {
+      year: firstDate.getFullYear(),
+      month: firstDate.getMonth() + 1,
+      day: firstDate.getDate(),
+    };
 
     /* ── 门店：目标/实收/完成率/初诊 全部来自 stores.json（单位元 → 万） ── */
     /* 「今日业绩」列：门店表新增的实时列(10 分钟一刷)。BI 里同时有"今日初诊",
@@ -302,13 +325,22 @@
       doctors: top7(doctorsRaw.rows, "医生", "医生业绩"),
     };
 
-    /* ── 每日实收（仅 9 月）：daily.json 时间形如"2026年9月X日"，元 → 万 ── */
+    /* ── 每日实收（动态活动窗口）：daily.json 时间形如"2026年10月13日"，元 → 万。
+       按下标 = 该日期距活动首日的天数入列；窗口外的日期（如 BI 里更早的历史）直接忽略。
+       这样 10 月、11 月…只要 BI「天数」列更新，曲线自动跟着走，不用改代码。 */
     const per = {};
+    const dayIdx = (y, m, d) =>
+      Math.round(
+        (Date.UTC(y, m - 1, d) -
+          Date.UTC(CAMPAIGN_START.year, CAMPAIGN_START.month - 1, CAMPAIGN_START.day)) /
+          86400000,
+      );
     (dailyRaw.rows || []).forEach((r) => {
       const m = /(\d+)年(\d+)月(\d+)日/.exec(String(r["时间"]));
-      if (!m || +m[2] !== 9) return;
-      const d = +m[3];
-      (per[r["门店"]] = per[r["门店"]] || {})[d] = num(r["实收金额"]) / 1e4;
+      if (!m) return;
+      const i = dayIdx(+m[1], +m[2], +m[3]);
+      if (i < 0 || i >= D) return;
+      (per[r["门店"]] = per[r["门店"]] || {})[i] = num(r["实收金额"]) / 1e4;
     });
     const byId = {};
     const all = new Array(T).fill(0);
@@ -316,7 +348,7 @@
       // 按 BI 里的真实店名取每日数据（页面叫「三级医院」但 BI 叫「医院」时也能取到）
       const m = per[s.biName || s.name] || {};
       const arr = [];
-      for (let d = 1; d <= T; d++) arr.push(m[d] || 0);
+      for (let i = 0; i < T; i++) arr.push(m[i] || 0);
       /* 今日点（下标 T-1）用门店表实时「今日业绩」覆盖：
          daily.json 已改为每天凌晨抓一次，白天它的今日格不刷新。
          找不到该列时 s.todayRev 为 null → 保持 daily 原值，不写 0。 */
@@ -349,7 +381,13 @@
       daily: { byId, all },
     };
     return {
-      campaign: { year: 2026, month: 9, monthDays: D, today: T },
+      campaign: {
+        year: CAMPAIGN_START.year,
+        month: CAMPAIGN_START.month,
+        monthDays: D,
+        today: T,
+        days: dayDates, // 第 i 天对应的真实日期，页面据此画 X 轴与 tooltip
+      },
       sprintK: CONFIG.sprintK,
       stores,
       channels,
