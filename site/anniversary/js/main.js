@@ -27,13 +27,20 @@
       const easeOut = (t) => 1 - Math.pow(1 - t, 3);
       const lerp = (a, b, t) => a + (b - a) * t;
       const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
-      const fmtW = (v) =>
-        v.toLocaleString("zh-CN", { maximumFractionDigits: 1 });
+      /* 金额一律 2 位小数（2026-10-13 需求：与 BI 报表取出来的数据一致）。
+         fmt2 输出带千分位的两位小数（21.35 / 8,888.00），fmtW 用于「万」口径、
+         fmtY 用于「元」口径，只差单位后缀。 */
+      const fmt2 = (v) =>
+        (Number(v) || 0).toLocaleString("zh-CN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      const fmtW = fmt2;
+      const fmtY = fmt2;
       const fmtI = (v) => Math.round(v).toLocaleString("zh-CN");
-      /* 金额自适应单位：≥1 万走「X.X万」，不足 1 万直接显示「X,XXX元」
-         （市场小组的「今日业绩」BI 里给的是元，小额时显示 0.0万 会看不出数） */
-      const fmtMoney = (v) =>
-        v >= 1e4 ? fmtW(v / 1e4) + "万" : fmtI(v) + "元";
+      /* 金额自适应单位：≥1 万走「X.XX万」，不足 1 万直接显示「X,XXX元」
+         （市场小组的「今日业绩」BI 里给的是元，小额时显示 0.00万 会看不出数） */
+      const fmtMoney = (v) => (v >= 1e4 ? fmtW(v / 1e4) + "万" : fmtY(v) + "元");
       function polar(cx, cy, r, deg) {
         const a = (deg * Math.PI) / 180;
         return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
@@ -165,7 +172,7 @@
             dot.setAttribute("cy", y.toFixed(2));
             dot.setAttribute("r", 3);
           }
-          txt.textContent = p.toFixed(1) + "%";
+          txt.textContent = p.toFixed(2) + "%";
         };
       }
       const drawRT = buildRing($("rTime"), KPI.timePct, "#e8c25f");
@@ -173,7 +180,7 @@
       /* 时间进度卡：大字位显示「第 X 天 / 共 30 天」，不再显示百分比（圆环里仍是%） */
       const daysText = (n) => `第 ${Math.round(n)} 天 / 共 ${D} 天`;
       $("subInit").textContent =
-        `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtI(KPI.avgTicket)} 元`;
+        `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtY(KPI.avgTicket)} 元`;
 
       /* ── 顶部 chip：两种口径
          channel：X人 · 目标 Y人 ／ 今日 N · 完成率 R%（条形 = 完成率）
@@ -185,7 +192,7 @@
       const chipLine2 = (c) =>
         c.kind === "group"
           ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 今日业绩 ${fmtMoney(c.revToday)}`
-          : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(0)}%`;
+          : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(2)}%`;
       const chipBarW = (c) =>
         Math.round(clamp(c.kind === "group" ? c.share * 100 : c.rate, 0, 100));
       const chipHTML = (c) => `<div class="chip">
@@ -377,7 +384,7 @@
         }
         hPct.style.fontSize = fs.toFixed(2) + "px";
       }
-      fitHeroNumber(KPI.revPct.toFixed(1) + "%");
+      fitHeroNumber(KPI.revPct.toFixed(2) + "%");
 
       /* 弧段 hover tooltip */
       const arcTip = $("arcTip");
@@ -393,7 +400,7 @@
            原 实收·基础 / 冲刺目标·完成 / 累计初诊·初诊完成率 三行已删除。 */
         const avgRow =
           s.avgTicket != null && s.avgTicket > 0
-            ? `<div><span class="col">平均单体</span><b>${fmtI(s.avgTicket)}</b> 元</div>`
+            ? `<div><span class="col">平均单体</span><b>${fmtY(s.avgTicket)}</b> 元</div>`
             : `<div><span class="col">平均单体</span><b>—</b></div>`;
         const remRev =
           s.remainRev != null
@@ -452,12 +459,12 @@
           STORES.forEach((s, i) => {
             drawProgress(i, s.revPct);
             labels[i].querySelector(".pct").textContent =
-              s.revPct.toFixed(1) + "%";
+              s.revPct.toFixed(2) + "%";
             labels[i].querySelector(".bar i").style.width =
               clamp(s.revPct, 0, 100) + "%";
           });
           drawWaves(KPI.revPct);
-          hPct.textContent = KPI.revPct.toFixed(1) + "%";
+          hPct.textContent = KPI.revPct.toFixed(2) + "%";
           return;
         }
         const DUR = 1800,
@@ -467,12 +474,12 @@
           STORES.forEach((s, i) => {
             drawProgress(i, s.revPct * k);
             labels[i].querySelector(".pct").textContent =
-              (s.revPct * k).toFixed(1) + "%";
+              (s.revPct * k).toFixed(2) + "%";
             labels[i].querySelector(".bar i").style.width =
               clamp(s.revPct * k, 0, 100) + "%";
           });
           drawWaves(KPI.revPct * k);
-          hPct.textContent = (KPI.revPct * k).toFixed(1) + "%";
+          hPct.textContent = (KPI.revPct * k).toFixed(2) + "%";
           if (k < 1) requestAnimationFrame(frame);
         })(t0);
       })();
@@ -492,12 +499,12 @@
               <div class="sp-l1">
                 <span class="dot" style="background:${s.color}"></span>
                 <span class="sp-name">${s.name}</span>
-                <span class="sp-meta">实收 ${actual.toFixed(1)} / 基础 ${s.targetBase} 万</span>
+                <span class="sp-meta">实收 ${fmtW(actual)} / 基础 ${fmtW(s.targetBase)} 万</span>
               </div>
               <div class="sp-bar-wrap">
                 <span class="sp-bar"><i data-w="${clamp((actual / sprint) * 100, 0, 100).toFixed(1)}"></i><span class="tick"></span></span>
               </div>
-              <span class="sp-pct">${s.revPct.toFixed(1)}%</span>
+              <span class="sp-pct">${s.revPct.toFixed(2)}%</span>
             </div>`;
           })
           .join("");
@@ -509,7 +516,7 @@
         m.stores.forEach((s, i) => {
           const row = rows[i];
           row.querySelector(".sp-meta").textContent =
-            `实收 ${s.actual.toFixed(1)} / 基础 ${s.targetBase} 万`;
+            `实收 ${fmtW(s.actual)} / 基础 ${fmtW(s.targetBase)} 万`;
           row.querySelector(".sp-bar i").style.width =
             clamp((s.actual / sprintOf(s.targetBase)) * 100, 0, 100).toFixed(
               1,
@@ -520,10 +527,10 @@
               pctEl,
               parseFloat(pctEl.textContent) || 0,
               s.revPct,
-              (v) => v.toFixed(1) + "%",
+              (v) => v.toFixed(2) + "%",
               1100,
             );
-          else pctEl.textContent = s.revPct.toFixed(1) + "%";
+          else pctEl.textContent = s.revPct.toFixed(2) + "%";
         });
       }
 
@@ -543,7 +550,7 @@
               <div class="sp-bar-wrap">
                 <span class="sp-bar"><i data-w="${clamp(s.initPct, 0, 100).toFixed(1)}"></i></span>
               </div>
-              <span class="sp-pct">${s.initPct.toFixed(1)}%</span>
+              <span class="sp-pct">${s.initPct.toFixed(2)}%</span>
             </div>`;
           })
           .join("");
@@ -552,7 +559,7 @@
             .querySelectorAll("i[data-w]")
             .forEach((el) => (el.style.width = el.dataset.w + "%"));
         $("tagRevisit").textContent =
-          `均值 ${(sumOf(m.stores, (s) => s.initPct) / m.stores.length).toFixed(1)}% · 按率降序`;
+          `均值 ${(sumOf(m.stores, (s) => s.initPct) / m.stores.length).toFixed(2)}% · 按率降序`;
       }
       renderRevisitRows(MODEL, false);
 
@@ -570,7 +577,7 @@
               <span class="rk-name">${p.name}</span>
               <span class="rk-store">${p.tag || ""}</span>
               <span class="rk-bar"><i data-w="${((p.amount / max) * 100).toFixed(1)}" style="--c:${colorOf(p)}"></i></span>
-              <span class="rk-val">${p.amount.toFixed(1)}<small>万</small></span>
+              <span class="rk-val">${fmtW(p.amount)}<small>万</small></span>
             </div>`,
           )
           .join("");
@@ -758,7 +765,7 @@
           hDot.setAttribute("cy", y);
           hDot.setAttribute("stroke", se.color);
           tip.style.display = "block";
-          tip.innerHTML = `${dayFull(i)} · <b>${se.data[i].toFixed(1)}</b> 万<br>累计 <b>${se.cum[i].toFixed(1)}</b> 万 · ${se.name}`;
+          tip.innerHTML = `${dayFull(i)} · <b>${se.data[i].toFixed(2)}</b> 万<br>累计 <b>${se.cum[i].toFixed(2)}</b> 万 · ${se.name}`;
           const tw = tip.offsetWidth / SCALE;
           tip.style.left = x + (i > (D * 2) / 3 ? -tw - 16 : 16) + "px";
           tip.style.top = clamp(y - 30, 4, TH - 60) + "px";
@@ -857,7 +864,7 @@
         $("vDays").textContent = daysText(T);
         setN("vInit", m.totalInit, fmtI);
         $("subInit").textContent =
-          `基础 ${fmtI(m.totalInitBase)} 人 · 客单 ${fmtI(m.kpi.avgTicket)} 元`;
+          `基础 ${fmtI(m.totalInitBase)} 人 · 客单 ${fmtY(m.kpi.avgTicket)} 元`;
         const to = {
           time: m.kpi.timePct,
           init: m.kpi.initPct,
@@ -882,20 +889,20 @@
       /* 中央 Hero：弧段生长 / 水位升降 / 主数字滚动 / 左右标签同步 */
       function updateHero(m, animate) {
         const target = m.kpi.revPct;
-        fitHeroNumber(target.toFixed(1) + "%"); // 字号按终态适配，滚动中宽度稳定
+        fitHeroNumber(target.toFixed(2) + "%"); // 字号按终态适配，滚动中宽度稳定
         const fromArc = curArc.slice(),
           fromHero = heroCur;
         const apply = (k) => {
           m.stores.forEach((s, i) => {
             const p = lerp(fromArc[i], s.revPct, k);
             drawProgress(i, p);
-            labels[i].querySelector(".pct").textContent = p.toFixed(1) + "%";
+            labels[i].querySelector(".pct").textContent = p.toFixed(2) + "%";
             labels[i].querySelector(".bar i").style.width =
               clamp(p, 0, 100) + "%";
           });
           const hp = lerp(fromHero, target, k);
           drawWaves(hp);
-          hPct.textContent = hp.toFixed(1) + "%";
+          hPct.textContent = hp.toFixed(2) + "%";
         };
         if (!animate) apply(1);
         else tween(950, apply);
