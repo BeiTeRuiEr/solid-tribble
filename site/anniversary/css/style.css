@@ -282,6 +282,13 @@
         border: 1px solid var(--panel-border);
         border-radius: 10px;
       }
+      /* 4 枚卡宽度按内容定（2026-10-13）：第 4 卡要放 3 枚 chip，其中
+         「今日 4 · 今日业绩 8,888元」这类文案实测需 164px，等宽 446 会溢出被截断。
+         396+372+396+620 + 3×24(卡间距) = 1856 = .kpis 宽度，行内仍是通栏闭合。 */
+      .kpi.kpi-w1 { width: 396px; }
+      .kpi.kpi-w2 { width: 372px; }
+      .kpi.kpi-w3 { width: 396px; }
+      .kpi.kpi-w4 { width: 620px; }
       .kpi-l {
         flex: 1;
         min-width: 0;
@@ -313,6 +320,15 @@
         font-size: var(--t5);
         color: var(--text-sub);
       }
+      /* 第 1 卡（时间进度）：大字位放「第 X 天 / 共 30 天」，比数字小一档以免溢出卡片 */
+      .kpi-val .kpi-days {
+        font: 700 var(--t3) var(--num-font);
+        line-height: 46px;
+        letter-spacing: 1px;
+        color: var(--gold-num);
+        text-shadow: 0 0 12px rgba(245, 180, 80, 0.32);
+        white-space: nowrap;
+      }
       .kpi-sub {
         font-size: var(--t5);
         color: var(--text-dim);
@@ -329,9 +345,10 @@
         fill: var(--text-main);
       }
 
-      /* 渠道卡：3 枚内联 chip */
+      /* 渠道卡：内联 chip（2~3 枚，按卡片宽度自适应） */
       .kpi-ch {
         flex: 1;
+        min-width: 0; /* 不加会被 chip 的 nowrap 内容顶宽，整卡溢出 */
         display: flex;
         gap: 12px;
       }

@@ -50,6 +50,29 @@
       { name: "市场", file: "market", color: "#c99572" },
       { name: "老带新", file: "referral", color: "#8fb5a4" },
     ],
+    /* 顶部两枚 chip 卡的排布（2026-10-13 起）：
+       第 3 张卡 = 网电 + 老带新；第 4 张卡 = 市场 + 市场一组 + 市场二组。
+       group 项来自 market_groups.json（BI「市场各小组数据」表，业绩口径）：
+         到诊人数 → 人数，总业绩 → 总业绩(万)，今日到诊 → 今日，今日业绩 → 今日业绩 */
+    channelCards: [
+      {
+        target: "chChipsA",
+        items: [{ channel: "网电" }, { channel: "老带新" }],
+      },
+      {
+        target: "chChipsB",
+        items: [
+          { channel: "市场" },
+          { group: "市场一组" },
+          { group: "市场二组" },
+        ],
+      },
+    ],
+    /* 市场各小组的展示顺序与颜色（名字要和 BI「所属部门」列完全一致） */
+    groups: [
+      { name: "市场一组", color: "#86a0b4" },
+      { name: "市场二组", color: "#cfc9ba" },
+    ],
   };
 
   /* 数据地址（按顺序尝试，命中即用）：
@@ -78,7 +101,7 @@
 
   const num = (v) => (v === "" || v == null || isNaN(+v) ? 0 : +v);
 
-  function buildModel(storesRaw, consultsRaw, doctorsRaw, chanRaws, dailyRaw) {
+  function buildModel(storesRaw, consultsRaw, doctorsRaw, chanRaws, dailyRaw, groupsRaw) {
     /* ── 活动进程：BI"天数/时间进度"列 = 第 N 天 / 共 30 天 ── */
     const D = 30;
     const T = Math.min(
@@ -197,6 +220,73 @@
     const cumSum = channels.reduce((a, c) => a + c.cum, 0) || 1;
     channels.forEach((c) => (c.share = c.cum / cumSum));
 
+    /* ── 市场各小组（BI「市场各小组数据」表）：业绩口径
+       列名在 BI 端可能微调，统一按关键字找列，找不到就退化为 0（不写死列名）。
+       注意「今日到诊」是人数、「今日业绩」是金额，两者都含"今日"，必须分开匹配。 */
+    const gCols = (groupsRaw && groupsRaw.columns) || [];
+    const gRows = (groupsRaw && groupsRaw.rows) || [];
+    const pickCol = (re) => gCols.find((c) => re.test(String(c))) || null;
+    const cHead = pickCol(/到诊人数|到诊/);
+    const cTotal = pickCol(/总业绩/);
+    const cToday = pickCol(/今日到诊/);
+    const cRevToday = pickCol(/今日.*(业绩|实收|金额)/);
+    const groups = CONFIG.groups
+      .map((g) => {
+        const r = gRows.find((x) => String(x["所属部门"]).trim() === g.name);
+        if (!r) return null;
+        return {
+          name: g.name,
+          color: g.color,
+          cum: cHead ? num(r[cHead]) : 0, // 到诊人数（人）
+          total: (cTotal ? num(r[cTotal]) : 0) / 1e4, // 总业绩（元 → 万）
+          today: cToday ? num(r[cToday]) : 0, // 今日到诊（人）
+          revToday: cRevToday ? num(r[cRevToday]) : 0, // 今日业绩（元）
+        };
+      })
+      .filter(Boolean);
+    /* 条形宽度：该组总业绩占「参与展示的组」合计的比例 */
+    const gRevSum = groups.reduce((a, g) => a + g.total, 0) || 1;
+    groups.forEach((g) => (g.share = g.total / gRevSum));
+
+    /* ── 顶部 chip 卡：按 CONFIG.channelCards 组装（渠道项 + 小组项）── */
+    const chanByName = {};
+    channels.forEach((c) => (chanByName[c.name] = c));
+    const groupByName = {};
+    groups.forEach((g) => (groupByName[g.name] = g));
+    const channelCards = (CONFIG.channelCards || []).map((card) => ({
+      target: card.target,
+      items: card.items
+        .map((it) => {
+          if (it.channel && chanByName[it.channel]) {
+            const c = chanByName[it.channel];
+            return {
+              kind: "channel",
+              name: c.name,
+              color: c.color,
+              cum: c.cum, // 累计到诊（人）
+              target: c.target, // 总目标（人）
+              today: c.today, // 今日到诊（人）
+              rate: c.rate, // 完成率 %
+            };
+          }
+          if (it.group && groupByName[it.group]) {
+            const g = groupByName[it.group];
+            return {
+              kind: "group",
+              name: g.name,
+              color: g.color,
+              cum: g.cum,
+              total: g.total,
+              today: g.today,
+              revToday: g.revToday,
+              share: g.share,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean),
+    }));
+
     /* ── 咨询/医生 TOP7：按实收金额降序；BI 无门店列，tag 放业绩完成率 ── */
     const top7 = (rows, nameKey, amtKey) =>
       rows
@@ -254,6 +344,7 @@
       totalInitBase,
       kpi,
       channels,
+      channelCards,
       staff,
       daily: { byId, all },
     };
@@ -262,6 +353,8 @@
       sprintK: CONFIG.sprintK,
       stores,
       channels,
+      channelCards,
+      groups,
       staff,
       daily: { byId, all },
       totals: { totalBase, totalRev, totalInitBase, totalInit },
@@ -272,22 +365,32 @@
   }
 
   async function loadDashboardData() {
-    const [storesRaw, consultsRaw, doctorsRaw, webRaw, marketRaw, referralRaw, dailyRaw] =
-      await Promise.all([
-        fetchJSON("stores"),
-        fetchJSON("consults"),
-        fetchJSON("doctors"),
-        fetchJSON("web"),
-        fetchJSON("market"),
-        fetchJSON("referral"),
-        fetchJSON("daily"),
-      ]);
+    const [
+      storesRaw,
+      consultsRaw,
+      doctorsRaw,
+      webRaw,
+      marketRaw,
+      referralRaw,
+      groupsRaw,
+      dailyRaw,
+    ] = await Promise.all([
+      fetchJSON("stores"),
+      fetchJSON("consults"),
+      fetchJSON("doctors"),
+      fetchJSON("web"),
+      fetchJSON("market"),
+      fetchJSON("referral"),
+      fetchJSON("market_groups"),
+      fetchJSON("daily"),
+    ]);
     const out = buildModel(
       storesRaw,
       consultsRaw,
       doctorsRaw,
       { web: webRaw, market: marketRaw, referral: referralRaw },
       dailyRaw,
+      groupsRaw,
     );
     out.updatedAt = [
       storesRaw,
@@ -296,6 +399,7 @@
       webRaw,
       marketRaw,
       referralRaw,
+      groupsRaw,
       dailyRaw,
     ]
       .map((j) => (j && j.updated_at) || "")

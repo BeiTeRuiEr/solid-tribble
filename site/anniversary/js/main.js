@@ -30,6 +30,10 @@
       const fmtW = (v) =>
         v.toLocaleString("zh-CN", { maximumFractionDigits: 1 });
       const fmtI = (v) => Math.round(v).toLocaleString("zh-CN");
+      /* 金额自适应单位：≥1 万走「X.X万」，不足 1 万直接显示「X,XXX元」
+         （市场小组的「今日业绩」BI 里给的是元，小额时显示 0.0万 会看不出数） */
+      const fmtMoney = (v) =>
+        v >= 1e4 ? fmtW(v / 1e4) + "万" : fmtI(v) + "元";
       function polar(cx, cy, r, deg) {
         const a = (deg * Math.PI) / 180;
         return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
@@ -155,37 +159,56 @@
         };
       }
       const drawRT = buildRing($("rTime"), KPI.timePct, "#e8c25f");
-      const drawRR = buildRing($("rRev"), KPI.revPct, "#f0cf7a");
       const drawRI = buildRing($("rInit"), KPI.initPct, "#e8c25f");
-      $("subTime").textContent = `第 ${T} 天 / 共 ${D} 天`;
-      $("subRev").textContent =
-        `基础 ${fmtI(totalBase)} 万 · 冲刺 ${fmtI(sprintOf(totalBase))} 万`;
+      /* 时间进度卡：大字位显示「第 X 天 / 共 30 天」，不再显示百分比（圆环里仍是%） */
+      const daysText = (n) => `第 ${Math.round(n)} 天 / 共 ${D} 天`;
       $("subInit").textContent =
         `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtI(KPI.avgTicket)} 元`;
 
-      let chipRefs = [];
-      function renderChannels(m) {
-        $("chChips").innerHTML = m.channels
-          .map((c) => {
-            return `<div class="chip">
+      /* ── 顶部 chip：两种口径
+         channel：X人 · 目标 Y人 ／ 今日 N · 完成率 R%（条形 = 完成率）
+         group  ：X人 · 总业绩 Y万 ／ 今日 N · 今日业绩 Z（条形 = 占两组合计业绩比例） */
+      const chipLine1 = (c) =>
+        c.kind === "group"
+          ? `<b>${fmtI(c.cum)}</b>人 · 总业绩 <b>${fmtW(c.total)}</b>万`
+          : `<b>${fmtI(c.cum)}</b>人 · 目标 <b>${fmtI(c.target)}</b>人`;
+      const chipLine2 = (c) =>
+        c.kind === "group"
+          ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 今日业绩 ${fmtMoney(c.revToday)}`
+          : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(0)}%`;
+      const chipBarW = (c) =>
+        Math.round(clamp(c.kind === "group" ? c.share * 100 : c.rate, 0, 100));
+      const chipHTML = (c) => `<div class="chip">
             <div class="chip-name"><span class="dot" style="background:${c.color}"></span>${c.name}</div>
-            <div class="chip-val"><b>${c.cum}</b>人 · 占比 ${Math.round(c.share * 100)}%</div>
-            <div class="chip-bar"><i data-w="${Math.round(c.share * 100)}"></i></div>
-            <div class="chip-val" style="line-height:18px">今日 <b style="font-size:14px">${c.today}</b> · 到诊 ${c.rate.toFixed(0)}%</div>
+            <div class="chip-val">${chipLine1(c)}</div>
+            <div class="chip-bar"><i data-w="${chipBarW(c)}"></i></div>
+            <div class="chip-val" style="line-height:18px">${chipLine2(c)}</div>
           </div>`;
-          })
-          .join("");
-        chipRefs = [...$("chChips").children].map((el) => ({
-          cum: el.querySelectorAll(".chip-val b")[0],
-          val2: el.querySelectorAll(".chip-val")[1],
-        }));
+
+      let chipRefs = [];
+      function renderChips(m) {
+        const cards = m.channelCards || [];
+        chipRefs = cards.map((card) => {
+          const box = $(card.target);
+          if (!box) return [];
+          box.innerHTML = card.items.map(chipHTML).join("");
+          return [...box.children].map((el) => ({
+            line1: el.querySelectorAll(".chip-val")[0],
+            bar: el.querySelector(".chip-bar i"),
+            line2: el.querySelectorAll(".chip-val")[1],
+          }));
+        });
       }
-      renderChannels(MODEL);
-      function updateChannels(m) {
-        m.channels.forEach((c, i) => {
-          chipRefs[i].cum.textContent = c.cum;
-          chipRefs[i].val2.innerHTML =
-            `今日 <b style="font-size:14px">${c.today}</b> · 到诊 ${c.rate.toFixed(0)}%`;
+      renderChips(MODEL);
+      function updateChips(m) {
+        (m.channelCards || []).forEach((card, ci) => {
+          card.items.forEach((c, i) => {
+            const ref = chipRefs[ci] && chipRefs[ci][i];
+            if (!ref) return;
+            ref.line1.innerHTML = chipLine1(c);
+            ref.line2.innerHTML = chipLine2(c);
+            if (ref.bar) ref.bar.style.width = chipBarW(c) + "%";
+          });
         });
       }
 
@@ -736,11 +759,9 @@
        * ══════════════════════════════════════════════════════════ */
       (function entrance() {
         const setNumbers = (k) => {
-          $("vTime").textContent = (KPI.timePct * k).toFixed(1);
-          $("vRev").textContent = fmtW(totalRev * k);
+          $("vDays").textContent = daysText(T * k);
           $("vInit").textContent = fmtI(totalInit * k);
           drawRT(KPI.timePct * k);
-          drawRR(KPI.revPct * k);
           drawRI(KPI.initPct * k);
         };
         document
@@ -799,14 +820,14 @@
       let dispY = SERIES[curKey].y.slice(); // 折线当前显示的 y（用于插值起点）
       let curArc = STORES.map((s) => s.revPct); // 6 段弧当前完成率
       let heroCur = KPI.revPct; // 水球当前水位
-      let ringCur = { time: KPI.timePct, rev: KPI.revPct, init: KPI.initPct };
+      let ringCur = { time: KPI.timePct, init: KPI.initPct };
       const beatFade = (el) => {
         el.classList.remove("bfade");
         void el.offsetWidth;
         el.classList.add("bfade");
       };
 
-      /* KPI 三卡：数字滚动 + 三只环同步补间 */
+      /* KPI 卡：天数/初诊数字 + 两只环同步补间（第 1 卡显示天数，无数字滚动） */
       function updateKPI(m, animate) {
         const setN = (id, to, fmt) => {
           const el = $(id);
@@ -818,19 +839,16 @@
             parseFloat((el.textContent + "").replace(/[^\d.-]/g, "")) || 0;
           tweenNum(el, from, to, fmt);
         };
-        setN("vTime", m.kpi.timePct, (v) => v.toFixed(1));
-        setN("vRev", m.totalRev, fmtW);
+        $("vDays").textContent = daysText(T);
         setN("vInit", m.totalInit, fmtI);
         $("subInit").textContent =
           `基础 ${fmtI(m.totalInitBase)} 人 · 客单 ${fmtI(m.kpi.avgTicket)} 元`;
         const to = {
           time: m.kpi.timePct,
-          rev: m.kpi.revPct,
           init: m.kpi.initPct,
         };
         if (!animate) {
           drawRT(to.time);
-          drawRR(to.rev);
           drawRI(to.init);
         } else {
           const from = ringCur,
@@ -839,7 +857,6 @@
           (function f(now) {
             const k = easeOut(clamp((now - t0) / DUR, 0, 1));
             drawRT(lerp(from.time, to.time, k));
-            drawRR(lerp(from.rev, to.rev, k));
             drawRI(lerp(from.init, to.init, k));
             if (k < 1) requestAnimationFrame(f);
           })(t0);
@@ -909,7 +926,7 @@
       /* 一次心跳 = 全板原地刷新 */
       function applyModel(m, animate) {
         updateKPI(m, animate);
-        updateChannels(m);
+        updateChips(m);
         updateHero(m, animate);
         updateRevRows(m, animate);
         renderRevisitRows(m, true);

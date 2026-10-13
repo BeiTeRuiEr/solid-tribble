@@ -9,7 +9,7 @@
 
 
   二、版式网格（设计像素，全部闭合）
-    头部 88 ｜ KPI 行 96–184（4 卡 ×446 gap24）
+    头部 88 ｜ KPI 行 96–184（4 卡 396+372+396+620 gap24 = 1856）
     主区 192–816 三栏：左 480 / 中 800 / 右 480（gutter 48，边距 32）
        32+480+48+800+48+480+32 = 1920，中央列 560→1360，中心 = 960
     底部折线 840–1048 通栏 1856 ｜ 底边距 32
@@ -30,7 +30,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="css/style.css?v=20261012-1" />
+        <link rel="stylesheet" href="css/style.css?v=20261013-2" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -128,27 +128,16 @@
 
       <!-- ═══════════ KPI 行 ═══════════ -->
       <section class="kpis" data-page-node-id="oSrQ1wHtikNl7rWVyhdjDN">
-        <div class="kpi rv" data-page-node-id="SEYMCR4YmNM6E5nRwQ7IFp">
+        <div class="kpi kpi-w1 rv" data-page-node-id="SEYMCR4YmNM6E5nRwQ7IFp">
           <div class="kpi-l" data-page-node-id="44aorb51xL6MD6YPoZtlcz">
             <div class="kpi-label" data-page-node-id="V92zzAW6HuHXwulFekLh0v">时间进度</div>
             <div class="kpi-val" data-page-node-id="hyriNu5bZcucHpvpL2OOkM">
-              <span class="num" id="vTime" data-page-node-id="tIEE3MougiuXbI8ZQb6H0s">0.0</span><span class="unit" data-page-node-id="O7dZuk6k6PlfmLgmGHEvLG">%</span>
+              <span class="kpi-days" id="vDays" data-page-node-id="tIEE3MougiuXbI8ZQb6H0s">第 — 天 / 共 — 天</span>
             </div>
-            <div class="kpi-sub" id="subTime" data-page-node-id="u6JN2mnEIhYJCzTOMCDFlZ">第 — 天 / 共 — 天</div>
           </div>
           <svg class="kpi-ring" id="rTime" viewBox="0 0 76 76" data-page-node-id="Ri1fY9IDdeKz1RI6IpJBEr"></svg>
         </div>
-        <div class="kpi rv" data-page-node-id="xRi9tnBVwguL4xviL0JL0x">
-          <div class="kpi-l" data-page-node-id="fzAci5xB72Cmhn3D7NAKaT">
-            <div class="kpi-label" data-page-node-id="O5rpzulqEDu8IPt1yL2ZdE">实收总额</div>
-            <div class="kpi-val" data-page-node-id="RCVx6vrJ17pDKSXDDdmLY9">
-              <span class="num" id="vRev" data-page-node-id="InIMxo8T8QPRCyh5iJ6Ayt">0</span><span class="unit" data-page-node-id="SgshnPoZXCHpcYYE85dBF2">万元</span>
-            </div>
-            <div class="kpi-sub" id="subRev" data-page-node-id="TKbxoZFyBJaGhJ40QJAyX7">冲刺目标 — 万</div>
-          </div>
-          <svg class="kpi-ring" id="rRev" viewBox="0 0 76 76" data-page-node-id="Qpdsl4Wsvq7b8BEYaNRXwF"></svg>
-        </div>
-        <div class="kpi rv" data-page-node-id="KUwDDoYRsBBzJocgN3xbk4">
+        <div class="kpi kpi-w2 rv" data-page-node-id="KUwDDoYRsBBzJocgN3xbk4">
           <div class="kpi-l" data-page-node-id="MGHXHej9tQ5Hyuykaf9URP">
             <div class="kpi-label" data-page-node-id="w1z18vkmG5Nbth9sIqBwyG">累计初诊</div>
             <div class="kpi-val" data-page-node-id="rzB3d2FVG9kCjQAFVdoI1Y">
@@ -158,8 +147,11 @@
           </div>
           <svg class="kpi-ring" id="rInit" viewBox="0 0 76 76" data-page-node-id="oSgAc6CB6fNtqqdUA3VIWz"></svg>
         </div>
-        <div class="kpi rv" data-page-node-id="k71qaQ9eMRFucWOAYcyMGH">
-          <div class="kpi-ch" id="chChips" data-page-node-id="TKcTfXJ90g9bT6nKtFfv62"></div>
+        <div class="kpi kpi-w3 rv" data-page-node-id="k71qaQ9eMRFucWOAYcyMGH">
+          <div class="kpi-ch" id="chChipsA" data-page-node-id="TKcTfXJ90g9bT6nKtFfv62"></div>
+        </div>
+        <div class="kpi kpi-w4 rv" data-page-node-id="k71qaQ9eMRFucWOAYcyMGH2">
+          <div class="kpi-ch" id="chChipsB" data-page-node-id="TKcTfXJ90g9bT6nKtFfv63"></div>
         </div>
       </section>
 
@@ -438,7 +430,7 @@
       </div>
     </div>
 
-        <script src="js/data.js?v=20261012-1"></script>
-    <script type="module" src="js/main.js?v=20261012-1"></script>
+        <script src="js/data.js?v=20261013-2"></script>
+    <script type="module" src="js/main.js?v=20261013-2"></script>
   </body>
 </html>
