@@ -25,7 +25,8 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bi_api  # noqa: E402
 
-TABLE_NAMES = ["门店数据", "咨询数据", "医生数据", "网电数据", "市场数据", "老带新数据"]
+TABLE_NAMES = ["门店数据", "咨询数据", "医生数据", "网电数据", "市场数据",
+               "市场各小组数据", "老带新数据"]
 DAILY_TABLE = "门店每日数据"
 FILE_KEYS = {
     "门店数据": "stores",
@@ -33,6 +34,7 @@ FILE_KEYS = {
     "医生数据": "doctors",
     "网电数据": "web",
     "市场数据": "market",
+    "市场各小组数据": "market_groups",
     "老带新数据": "referral",
     "门店每日数据": "daily",
 }
@@ -46,6 +48,7 @@ HEADER_CHECK = {
     "医生数据": ["医生"],
     "网电数据": ["总目标"],
     "市场数据": ["总目标"],
+    "市场各小组数据": ["所属部门", "平均单体"],
     "老带新数据": ["总目标"],
     "门店每日数据": ["时间", "门店", "实收金额"],
 }
