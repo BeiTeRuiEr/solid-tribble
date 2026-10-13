@@ -372,6 +372,11 @@
 
       /* 主数字：宽度自动适配到「水球直径 × 73%」 */
       const hPct = $("hPct");
+      const hSubVal = $("hSubVal");
+      /* 水球下方数值行（2026-10-13 需求）：实收 / 基础目标，单位万元、2 位小数 */
+      const heroSubText = (rev, base) => `${fmtW(rev)} / ${fmtW(base)} 万元`;
+      let heroRev = totalRev,
+        heroBase = totalBase;
       const TARGET_W = 0.73 * 2 * H.R_BALL; // 259.9 用户单位
       function fitHeroNumber(text) {
         hPct.textContent = text;
@@ -465,6 +470,7 @@
           });
           drawWaves(KPI.revPct);
           hPct.textContent = KPI.revPct.toFixed(2) + "%";
+          hSubVal.textContent = heroSubText(totalRev, totalBase);
           return;
         }
         const DUR = 1800,
@@ -480,6 +486,7 @@
           });
           drawWaves(KPI.revPct * k);
           hPct.textContent = (KPI.revPct * k).toFixed(2) + "%";
+          hSubVal.textContent = heroSubText(totalRev * k, totalBase);
           if (k < 1) requestAnimationFrame(frame);
         })(t0);
       })();
@@ -891,7 +898,11 @@
         const target = m.kpi.revPct;
         fitHeroNumber(target.toFixed(2) + "%"); // 字号按终态适配，滚动中宽度稳定
         const fromArc = curArc.slice(),
-          fromHero = heroCur;
+          fromHero = heroCur,
+          toRev = m.totalRev,
+          toBase = m.totalBase,
+          fromRev = heroRev,
+          fromBase = heroBase;
         const apply = (k) => {
           m.stores.forEach((s, i) => {
             const p = lerp(fromArc[i], s.revPct, k);
@@ -903,11 +914,17 @@
           const hp = lerp(fromHero, target, k);
           drawWaves(hp);
           hPct.textContent = hp.toFixed(2) + "%";
+          hSubVal.textContent = heroSubText(
+            lerp(fromRev, toRev, k),
+            lerp(fromBase, toBase, k),
+          );
         };
         if (!animate) apply(1);
         else tween(950, apply);
         curArc = m.stores.map((s) => s.revPct);
         heroCur = target;
+        heroRev = toRev;
+        heroBase = toBase;
       }
 
       /* 底部折线：序列整体替换 + 260~700ms 插值；量程变档时重建网格 */
