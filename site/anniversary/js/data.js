@@ -82,8 +82,8 @@
      按当前 URL 判断，避免多打一轮 404 请求。 */
   const IN_SUBDIR = location.pathname.indexOf("/anniversary/") >= 0;
   const BASES = IN_SUBDIR
-    ? ["../data/", "https://yinna1234.github.io/solid-tribble/data/"]
-    : ["data/", "https://yinna1234.github.io/solid-tribble/data/"];
+    ? ["../data/", "https://beiteruier.github.io/solid-tribble/data/"]
+    : ["data/", "https://beiteruier.github.io/solid-tribble/data/"];
 
   async function fetchJSON(file) {
     let lastErr;
@@ -108,8 +108,8 @@
   }
 
   function buildModel(storesRaw, consultsRaw, doctorsRaw, chanRaws, dailyRaw, groupsRaw) {
-    /* ── 活动进程：BI"天数/时间进度"列 = 第 N 天 / 共 30 天 ── */
-    const D = 30;
+    /* ── 活动进程：BI"天数/时间进度"列 = 第 N 天 / 共 31 天 ── */
+    const D = 31;
     const T = Math.min(
       D,
       Math.max(1, Math.round(num(storesRaw.rows[0] && storesRaw.rows[0]["天数"])) || 28),
@@ -140,6 +140,11 @@
     const todayKey =
       cols.find((c) => /今日/.test(String(c)) && /业绩|实收|金额/.test(String(c))) ||
       cols.find((c) => /今日/.test(String(c)) && !/到诊|初诊/.test(String(c)));
+    /* 「今日初诊」列（2026-10-14 新增，给顶部「今日数据」卡用）：
+       与今日业绩同理按关键字找列，避免写死列名在 BI 端改列名时断掉。 */
+    const todayInitKey = cols.find(
+      (c) => /今日/.test(String(c)) && /初诊/.test(String(c)),
+    );
     /* 页面叫法 → BI 行的映射：原名优先，原名找不到再看别名（如 三级医院→医院）。
        biName 记下来给下面的曲线按 BI 名字取每日数据用。 */
     const byName = {};
@@ -180,6 +185,7 @@
            daily.json 每天只在凌晨抓一次，今日那格会是 0/陈旧值，
            所以曲线最后一个点用这里覆盖，历史点仍来自 daily。 */
         todayRev: todayKey ? num(r[todayKey]) / 1e4 : null,
+        todayInit: todayInitKey ? num(r[todayInitKey]) : 0, // 今日初诊（人）
         revisit: ex.revisit != null ? ex.revisit : 0, // 复诊到店率%（BI 无，手填）
       };
     });
@@ -362,11 +368,17 @@
     const totalRev = stores.reduce((a, s) => a + s.actual, 0);
     const totalInitBase = stores.reduce((a, s) => a + s.initBase, 0);
     const totalInit = stores.reduce((a, s) => a + s.initActual, 0);
+    /* 「今日数据」卡（2026-10-14 新增）：今日初诊（人）/ 今日业绩（万）
+       = 门店表各店求和；todayRev 为 null（找不到列）时按 0 计。 */
+    const totalTodayInit = stores.reduce((a, s) => a + (s.todayInit || 0), 0);
+    const totalTodayRev = stores.reduce((a, s) => a + (s.todayRev || 0), 0);
     const kpi = {
       timePct: (T / D) * 100,
       revPct: totalBase ? (totalRev / totalBase) * 100 : 0,
       initPct: totalInitBase ? (totalInit / totalInitBase) * 100 : 0,
       avgTicket: totalInit ? (totalRev * 1e4) / totalInit : 0,
+      todayInit: totalTodayInit,
+      todayRev: totalTodayRev,
     };
     const model = {
       stores,
@@ -395,7 +407,7 @@
       groups,
       staff,
       daily: { byId, all },
-      totals: { totalBase, totalRev, totalInitBase, totalInit },
+      totals: { totalBase, totalRev, totalInitBase, totalInit, totalTodayInit, totalTodayRev },
       kpi,
       model,
       updatedAt: "",

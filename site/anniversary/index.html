@@ -9,7 +9,8 @@
 
 
   二、版式网格（设计像素，全部闭合）
-    头部 88 ｜ KPI 行 96–184（4 卡 396+372+396+620 gap24 = 1856）
+    头部 88 ｜ KPI 行 96–184（5 卡 228+228+434×3 gap24×4 = 1856：
+    时间进度+今日数据 平分左栏 480 上方，累计初诊/网电/市场 三卡等宽占满其余）
     主区 192–816 三栏：左 480 / 中 800 / 右 480（gutter 48，边距 32）
        32+480+48+800+48+480+32 = 1920，中央列 560→1360，中心 = 960
     底部折线 840–1048 通栏 1856 ｜ 底边距 32
@@ -30,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="css/style.css?v=20261013-5" />
+        <link rel="stylesheet" href="css/style.css?v=20261014-1" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -132,10 +133,27 @@
           <div class="kpi-l" data-page-node-id="44aorb51xL6MD6YPoZtlcz">
             <div class="kpi-label" data-page-node-id="V92zzAW6HuHXwulFekLh0v">时间进度</div>
             <div class="kpi-val" data-page-node-id="hyriNu5bZcucHpvpL2OOkM">
-              <span class="kpi-days" id="vDays" data-page-node-id="tIEE3MougiuXbI8ZQb6H0s">第 — 天 / 共 — 天</span>
+              <span class="kpi-days" id="vDays" data-page-node-id="tIEE3MougiuXbI8ZQb6H0s">第 — 天</span>
             </div>
+            <div class="kpi-sub" id="vDaysTotal">共 — 天</div>
           </div>
           <svg class="kpi-ring" id="rTime" viewBox="0 0 76 76" data-page-node-id="Ri1fY9IDdeKz1RI6IpJBEr"></svg>
+        </div>
+        <div class="kpi kpi-w1b rv">
+          <div class="kpi-l">
+            <div class="kpi-label">今日数据</div>
+            <div class="today-duo">
+              <div class="td-item">
+                <div class="td-line"><span class="td-num" id="vTodayInit">0</span><span class="td-unit">人</span></div>
+                <div class="td-cap">今日初诊</div>
+              </div>
+              <div class="td-sep"></div>
+              <div class="td-item">
+                <div class="td-line"><span class="td-num" id="vTodayRev">0</span><span class="td-unit">万</span></div>
+                <div class="td-cap">今日业绩</div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="kpi kpi-w2 rv" data-page-node-id="KUwDDoYRsBBzJocgN3xbk4">
           <div class="kpi-l" data-page-node-id="MGHXHej9tQ5Hyuykaf9URP">
@@ -443,7 +461,7 @@
       </div>
     </div>
 
-        <script src="js/data.js?v=20261013-5"></script>
-    <script type="module" src="js/main.js?v=20261013-5"></script>
+        <script src="js/data.js?v=20261014-1"></script>
+    <script type="module" src="js/main.js?v=20261014-1"></script>
   </body>
 </html>

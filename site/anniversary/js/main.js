@@ -177,8 +177,9 @@
       }
       const drawRT = buildRing($("rTime"), KPI.timePct, "#e8c25f");
       const drawRI = buildRing($("rInit"), KPI.initPct, "#e8c25f");
-      /* 时间进度卡：大字位显示「第 X 天 / 共 30 天」，不再显示百分比（圆环里仍是%） */
-      const daysText = (n) => `第 ${Math.round(n)} 天 / 共 ${D} 天`;
+      /* 时间进度卡：大字位显示「第 X 天」，下一行小字「共 31 天」（2026-10-14 需求） */
+      const daysText = (n) => `第 ${Math.round(n)} 天`;
+      $("vDaysTotal").textContent = `共 ${D} 天`;
       $("subInit").textContent =
         `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtY(KPI.avgTicket)} 元`;
 
@@ -790,6 +791,8 @@
         const setNumbers = (k) => {
           $("vDays").textContent = daysText(T * k);
           $("vInit").textContent = fmtI(totalInit * k);
+          $("vTodayInit").textContent = fmtI(DATA.kpi.todayInit * k);
+          $("vTodayRev").textContent = fmt2(DATA.kpi.todayRev * k);
           drawRT(KPI.timePct * k);
           drawRI(KPI.initPct * k);
         };
@@ -870,6 +873,8 @@
         };
         $("vDays").textContent = daysText(T);
         setN("vInit", m.totalInit, fmtI);
+        setN("vTodayInit", m.kpi.todayInit, fmtI);
+        setN("vTodayRev", m.kpi.todayRev, fmt2);
         $("subInit").textContent =
           `基础 ${fmtI(m.totalInitBase)} 人 · 客单 ${fmtY(m.kpi.avgTicket)} 元`;
         const to = {
