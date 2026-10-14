@@ -195,11 +195,11 @@
          group  ：X人 · 总业绩 Y万 ／ 今日 N · 今日业绩 Z（条形 = 占两组合计业绩比例） */
       const chipLine1 = (c) =>
         c.kind === "group"
-          ? `<b>${fmtI(c.cum)}</b>人 · 总业绩 <b>${fmtW(c.total)}</b>万`
+          ? `<b>${fmtI(c.cum)}</b>人 · <b>${fmtW(c.total)}</b>万`
           : `<b>${fmtI(c.cum)}</b>人 · 目标 <b>${fmtI(c.target)}</b>人`;
       const chipLine2 = (c) =>
         c.kind === "group"
-          ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 今日业绩 ${fmtMoney(c.revToday)}`
+          ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · ${fmtMoney(c.revToday)}`
           : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(2)}%`;
       const chipBarW = (c) =>
         Math.round(clamp(c.kind === "group" ? c.share * 100 : c.rate, 0, 100));
