@@ -708,7 +708,7 @@
         display: flex;
         align-items: center;
         gap: calc(var(--u) * 10);
-        width: calc(var(--u) * 178);
+        width: calc(var(--u) * 200); /* 2026-10-14 加宽：容纳新增的今日数据行 */
         padding: calc(var(--u) * 10) calc(var(--u) * 14);
         border-radius: calc(var(--u) * 10);
         background: rgba(255, 255, 255, 0.055);
@@ -766,6 +766,16 @@
         width: 0;
         border-radius: calc(var(--u) * 2);
         transition: width 1.6s cubic-bezier(0.22, 0.9, 0.35, 1);
+      }
+      /* 今日数据行（2026-10-14 新增）：今日初诊/今日业绩 */
+      .store-label .today {
+        margin-top: calc(var(--u) * 4);
+        font-size: calc(var(--u) * 12);
+        color: var(--text-sub);
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       /* 弧段 hover：高亮命中项，其余降亮 */
       .hero-mod.focus .store-label {
