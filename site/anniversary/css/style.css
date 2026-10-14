@@ -283,16 +283,17 @@
         border-radius: 10px;
       }
       /* 5 卡布局（2026-10-14 需求）：时间进度+今日数据 平分左栏 480 上方（各 228），
-         累计初诊/网电/市场 三卡 flex 等宽占满其余（(1856-4×24-456)/3 ≈ 434）。
-         228+228+434×3 + 4×24(卡间距) = 1856 = .kpis 宽度，行内仍是通栏闭合。 */
+         市场卡固定 480 与下方「健康顾问业绩」面板(1408..1888)严格对齐；
+         累计初诊/网电 flex 等宽平分剩余（(1856-4×24-228×2-480)/2 = 412）。
+         228+228+412×2+480 + 4×24(卡间距) = 1856 = .kpis 宽度，行内仍是通栏闭合。 */
       .kpi.kpi-w1 { width: 228px; padding: 0 16px; }
       .kpi.kpi-w1b { width: 228px; padding: 0 16px; }
       .kpi.kpi-w2,
-      .kpi.kpi-w3,
-      .kpi.kpi-w4 { flex: 1 1 0; width: auto; min-width: 0; }
+      .kpi.kpi-w3 { flex: 1 1 0; width: auto; min-width: 0; }
+      .kpi.kpi-w4 { flex: none; width: 480px; }
       /* 时间进度卡变窄后：「第 X 天」字号降一档保证不溢出 */
       .kpi.kpi-w1 .kpi-days { font-size: 22px; letter-spacing: 0; }
-      /* 市场卡（3 枚 chip）变窄：缩内边距/间距/数字字号，chip 超宽走省略号 */
+      /* 市场卡（3 枚 chip）：缩内边距/间距/数字字号，chip 超宽走省略号 */
       .kpi.kpi-w4 { padding: 0 12px; }
       .kpi.kpi-w4 .kpi-ch { gap: 8px; }
       .kpi.kpi-w4 .chip-val b { font-size: 16px; }
