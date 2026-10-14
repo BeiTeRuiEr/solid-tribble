@@ -16,6 +16,13 @@
        * ══════════════════════════════════════════════════════════ */
       const SVGNS = "http://www.w3.org/2000/svg";
       const $ = (id) => document.getElementById(id);
+      /* 防呆（2026-10-14）：曾经因根目录还留着一份旧版页面（没有新加的元素），
+         JS 取到 null 直接赋值 → 抛错 → 整个看板渲染中断变成空白页。
+         凡写字到 DOM 一律走 setTxt / .? 判空，缺元素只跳过该处，不再拖垮整页。 */
+      const setTxt = (id, txt) => {
+        const el = $(id);
+        if (el) el.textContent = txt;
+      };
       const ANIM = !/[?&]static=1/.test(location.search);
       if (!ANIM) document.documentElement.classList.add("noanim");
       /* 数据心跳：间隔与初始拍（调试参数） */
@@ -126,6 +133,7 @@
        * ⑤ KPI 行：环形 + 数字滚动 + 渠道 chip
        * ══════════════════════════════════════════════════════════ */
       function buildRing(svg, pct, color) {
+        if (!svg) return () => {};
         const CX = 38,
           CY = 38,
           R = 29,
@@ -179,9 +187,8 @@
       const drawRI = buildRing($("rInit"), KPI.initPct, "#e8c25f");
       /* 时间进度卡：大字位显示「第 X 天」，下一行小字「共 31 天」（2026-10-14 需求） */
       const daysText = (n) => `第 ${Math.round(n)} 天`;
-      $("vDaysTotal").textContent = `共 ${D} 天`;
-      $("subInit").textContent =
-        `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtY(KPI.avgTicket)} 元`;
+      setTxt("vDaysTotal", `共 ${D} 天`);
+      setTxt("subInit", `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtY(KPI.avgTicket)} 元`);
 
       /* ── 顶部 chip：两种口径
          channel：X人 · 目标 Y人 ／ 今日 N · 完成率 R%（条形 = 完成率）
@@ -789,10 +796,10 @@
        * ══════════════════════════════════════════════════════════ */
       (function entrance() {
         const setNumbers = (k) => {
-          $("vDays").textContent = daysText(T * k);
-          $("vInit").textContent = fmtI(totalInit * k);
-          $("vTodayInit").textContent = fmtI(DATA.kpi.todayInit * k);
-          $("vTodayRev").textContent = fmt2(DATA.kpi.todayRev * k);
+          setTxt("vDays", daysText(T * k));
+          setTxt("vInit", fmtI(totalInit * k));
+          setTxt("vTodayInit", fmtI(DATA.kpi.todayInit * k));
+          setTxt("vTodayRev", fmt2(DATA.kpi.todayRev * k));
           drawRT(KPI.timePct * k);
           drawRI(KPI.initPct * k);
         };
@@ -863,6 +870,7 @@
       function updateKPI(m, animate) {
         const setN = (id, to, fmt) => {
           const el = $(id);
+          if (!el) return; // 页面里没这个元素就跳过，不拖垮整页
           if (!animate) {
             el.textContent = fmt(to);
             return;
@@ -871,7 +879,7 @@
             parseFloat((el.textContent + "").replace(/[^\d.-]/g, "")) || 0;
           tweenNum(el, from, to, fmt);
         };
-        $("vDays").textContent = daysText(T);
+        setTxt("vDays", daysText(T));
         setN("vInit", m.totalInit, fmtI);
         setN("vTodayInit", m.kpi.todayInit, fmtI);
         setN("vTodayRev", m.kpi.todayRev, fmt2);
