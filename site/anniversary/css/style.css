@@ -287,7 +287,7 @@
          累计初诊/网电 flex 等宽平分剩余（(1856-4×24-228×2-480)/2 = 412）。
          228+228+412×2+480 + 4×24(卡间距) = 1856 = .kpis 宽度，行内仍是通栏闭合。 */
       .kpi.kpi-w1 { width: 228px; padding: 0 16px; }
-      .kpi.kpi-w1b { width: 228px; padding: 0 16px; }
+      .kpi.kpi-w1b { width: 228px; padding: 0 12px; }
       .kpi.kpi-w2,
       .kpi.kpi-w3 { flex: 1 1 0; width: auto; min-width: 0; }
       .kpi.kpi-w4 { flex: none; width: 480px; }
@@ -338,11 +338,11 @@
         white-space: nowrap;
       }
       /* 第 2 卡（今日数据，2026-10-14 新增）：今日初诊 / 今日业绩 双列 */
+      .kpi.kpi-w1b .kpi-l { height: 82px; } /* 与累计初诊卡(label+val+sub=82)同高，标题行对齐 */
       .today-duo {
         display: flex;
-        align-items: center;
-        gap: 12px;
-        height: 46px;
+        align-items: flex-end;
+        gap: 8px;
       }
       .td-item {
         flex: 1;
@@ -356,14 +356,14 @@
         gap: 3px;
       }
       .td-num {
-        font: 700 26px var(--num-font);
-        line-height: 30px;
+        font: 700 var(--t2) var(--num-font); /* 与累计初诊的大数字同号（2026-10-14 需求） */
+        line-height: 46px;
         color: var(--gold-num);
         text-shadow: 0 0 12px rgba(245, 180, 80, 0.32);
         white-space: nowrap;
       }
       .td-unit {
-        font-size: 12px;
+        font-size: var(--t5);
         color: var(--text-sub);
       }
       .td-cap {
