@@ -3,13 +3,11 @@ name: Fetch data & deploy Pages
 on:
   push:
     branches: [main] # push 到 main 即自动部署(改 site/ 不用再手动 Run)
-  schedule:
-    # 每 1 小时一次(每小时第 12 分,错开整点高峰,降低被 GitHub 调度器丢班次的概率)
-    - cron: '12 * * * *'
-    # 每天一次:只抓「门店每日数据」。cron 用 UTC —— 北京时间 02:00 = UTC 前一天 18:00。
-    # 单独一条 cron 而不是独立 workflow:两条 workflow 共用并发组时,排队中的那条会被
-    # 后来的挤掉(cancelled),凌晨这次很容易跑不起来;合并成一条就只有一种队列,不会被取消。
-    - cron: '0 18 * * *'
+  # 定时调度已停用(2026-10-14):保留 push 与手动触发,不再被 GitHub 调度器自动跑。
+  # 如需恢复,把下面的 schedule 取消注释即可(注意 cron 用 UTC):
+  # schedule:
+  #   - cron: '12 * * * *'      # 每 1 小时一次,每小时第 12 分
+  #   - cron: '0 18 * * *'      # 每天一次抓每日业绩(UTC 18:00 = 北京 02:00)
   workflow_dispatch: {} # 手动补跑兜底(模式按运行时的 UTC 小时自动判定)
 
 permissions:
