@@ -363,10 +363,14 @@
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */
       /* 今日数据行（2026-10-14 需求）：今日初诊/今日业绩，取 BI 门店表各店实时列。
          两项分两行显示（2026-10-14 需求二）。 */
+      /* 两列对齐（2026-10-14 需求）：第一行「今日数据：X人」，第二行只有「Y万元」，
+         数值统一右对齐成一列（label 占满剩余宽度把数值顶到右侧）。 */
       const todayHTML = (s) =>
         s.todayRev == null
-          ? `<div class="t-line">今日数据：—</div><div class="t-line">—</div>`
-          : `<div class="t-line">今日数据：${fmtI(s.todayInit)}人</div><div class="t-line">${fmt2(s.todayRev)}万元</div>`;
+          ? `<div class="t-line"><span class="t-lab">今日数据：</span><span class="t-val">—</span></div>
+             <div class="t-line"><span class="t-lab"></span><span class="t-val">—</span></div>`
+          : `<div class="t-line"><span class="t-lab">今日数据：</span><span class="t-val">${fmtI(s.todayInit)}人</span></div>
+             <div class="t-line"><span class="t-lab"></span><span class="t-val">${fmt2(s.todayRev)}万元</span></div>`;
       STORES.forEach((s, i) => {
         const seg = SEGMENTS[i];
         const center = seg.start + H.SEG_SPAN / 2;

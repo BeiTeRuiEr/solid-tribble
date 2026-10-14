@@ -712,13 +712,8 @@
         /* 下内边距加大（2026-10-14）：今日数据两行不能让最后一行贴着边框 */
         padding: calc(var(--u) * 10) calc(var(--u) * 14) calc(var(--u) * 14);
         border-radius: calc(var(--u) * 10);
-        /* 底色改为接近不透明（2026-10-14）：原来是 0.055 透明度，背后的圆环弧段会透过来
-           在文字上形成一条横线，看起来像"数据顶出来"。 */
-        background: linear-gradient(
-          165deg,
-          rgba(122, 15, 20, 0.62),
-          rgba(38, 6, 11, 0.82)
-        );
+        /* 底色改回原样（2026-10-14，用户要求） */
+        background: rgba(255, 255, 255, 0.055);
         border: 1px solid rgba(212, 175, 55, 0.22);
         transform: translateY(-50%);
         transition:
@@ -782,13 +777,26 @@
         gap: calc(var(--u) * 1);
       }
       .store-label .today .t-line {
+        display: flex;
+        align-items: baseline;
+        gap: calc(var(--u) * 4);
         font-size: calc(var(--u) * 12);
         color: var(--text-sub);
         letter-spacing: 0.5px;
         line-height: 1.35;
         white-space: nowrap;
         overflow: hidden;
+      }
+      /* 今日初诊 / 今日业绩 数值成一列（2026-10-14 需求）：标签吃掉剩余宽度，数值右对齐 */
+      .store-label .today .t-lab {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
         text-overflow: ellipsis;
+      }
+      .store-label .today .t-val {
+        flex: none;
+        font-variant-numeric: tabular-nums;
       }
       /* 弧段 hover：高亮命中项，其余降亮 */
       .hero-mod.focus .store-label {
