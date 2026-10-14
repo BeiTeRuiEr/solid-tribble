@@ -76,14 +76,9 @@
   };
 
   /* 数据地址（按顺序尝试，命中即用）：
-     - 页面在站点根（https://.../solid-tribble/）            → "data/"
-     - 页面在子目录（https://.../solid-tribble/anniversary/）→ "../data/"
-     - 绝对地址兜底（本地双击打开 / 任意静态服务器都能用）
-     按当前 URL 判断，避免多打一轮 404 请求。 */
-  const IN_SUBDIR = location.pathname.indexOf("/anniversary/") >= 0;
-  const BASES = IN_SUBDIR
-    ? ["../data/", "https://beiteruier.github.io/solid-tribble/data/"]
-    : ["data/", "https://beiteruier.github.io/solid-tribble/data/"];
+     看板现在位于站点根目录（https://beiteruier.github.io/solid-tribble/），
+     所以首选 "data/"；本地双击打开 / 任意静态服务器时用绝对地址兜底。 */
+  const BASES = ["data/", "https://beiteruier.github.io/solid-tribble/data/"];
 
   async function fetchJSON(file) {
     let lastErr;
