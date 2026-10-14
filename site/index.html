@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261014-14" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261014-15" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -166,9 +166,11 @@
         </div>
         <div class="kpi kpi-w3 rv" data-page-node-id="k71qaQ9eMRFucWOAYcyMGH">
           <div class="kpi-ch" id="chChipsA" data-page-node-id="TKcTfXJ90g9bT6nKtFfv62"></div>
+          <button class="more-btn" id="moreWeb" type="button" title="查看网电 / 老带新明细">更多</button>
         </div>
         <div class="kpi kpi-w4 rv" data-page-node-id="k71qaQ9eMRFucWOAYcyMGH2">
           <div class="kpi-ch" id="chChipsB" data-page-node-id="TKcTfXJ90g9bT6nKtFfv63"></div>
+          <button class="more-btn" id="moreMkt" type="button" title="查看市场 / 各小组明细">更多</button>
         </div>
       </section>
 
@@ -458,9 +460,20 @@
       <div class="foot-note" data-page-node-id="hqwaJQjd3VyY5kEyzMBYX4">
         数据来源：宏脉BI报表平台 · 每5分钟自动刷新
       </div>
+
+      <!-- ═══════════ 「更多」明细弹窗（网电/市场卡右上角按钮触发） ═══════════ -->
+      <div class="modal-mask" id="moreMask" hidden>
+        <div class="modal-box" role="dialog" aria-modal="true">
+          <div class="modal-hd">
+            <h3 id="moreTitle">明细</h3>
+            <button class="modal-close" id="moreClose" type="button" title="关闭">×</button>
+          </div>
+          <div class="modal-body" id="moreBody"></div>
+        </div>
+      </div>
     </div>
 
-        <script src="app/js/data.js?v=20261014-14"></script>
-    <script type="module" src="app/js/main.js?v=20261014-14"></script>
+        <script src="app/js/data.js?v=20261014-15"></script>
+    <script type="module" src="app/js/main.js?v=20261014-15"></script>
   </body>
 </html>

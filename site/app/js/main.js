@@ -227,6 +227,66 @@
         });
       }
       renderChips(MODEL);
+
+      /* ══ 「更多」明细弹窗（2026-10-14 需求）══
+         网电卡 → 网电数据 + 老带新数据；市场卡 → 市场数据 + 市场各小组数据。
+         表格渲染用 MODEL.tables（每次心跳随模型整体替换 → 打开时永远是最新值）。 */
+      const fmtCell = (v) => {
+        if (v === "" || v == null) return "—";
+        const n = +v;
+        return isNaN(n)
+          ? String(v)
+          : n.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
+      };
+      const tableHTML = (raw) => {
+        const cols = (raw && raw.columns) || [];
+        const rows = (raw && raw.rows) || [];
+        if (!cols.length || !rows.length) return `<p class="more-empty">暂无数据</p>`;
+        const head = cols.map((c) => `<th>${c}</th>`).join("");
+        const body = rows
+          .map((r) => {
+            const tds = cols
+              .map((c, i) => `<td class="${i === 0 ? "" : "num"}">${fmtCell(r[c])}</td>`)
+              .join("");
+            return `<tr>${tds}</tr>`;
+          })
+          .join("");
+        return `<table class="more-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+      };
+      const moreMask = $("moreMask");
+      const openMore = (title, secs) => {
+        $("moreTitle").textContent = title;
+        $("moreBody").innerHTML = secs
+          .map(
+            (s) =>
+              `<div class="more-sec-title">${s.title}</div>` +
+              tableHTML(MODEL.tables && MODEL.tables[s.key]),
+          )
+          .join("");
+        moreMask.hidden = false;
+      };
+      const closeMore = () => {
+        moreMask.hidden = true;
+      };
+      $("moreClose").addEventListener("click", closeMore);
+      moreMask.addEventListener("click", (e) => {
+        if (e.target === moreMask) closeMore(); // 点遮罩空白处关闭
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMore();
+      });
+      $("moreWeb").addEventListener("click", () =>
+        openMore("网电 / 老带新明细", [
+          { title: "网电数据", key: "web" },
+          { title: "老带新数据", key: "referral" },
+        ]),
+      );
+      $("moreMkt").addEventListener("click", () =>
+        openMore("市场 / 各小组明细", [
+          { title: "市场数据", key: "market" },
+          { title: "市场各小组数据", key: "groups" },
+        ]),
+      );
       function updateChips(m) {
         (m.channelCards || []).forEach((card, ci) => {
           card.items.forEach((c, i) => {

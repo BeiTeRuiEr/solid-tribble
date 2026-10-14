@@ -386,6 +386,14 @@
       channelCards,
       staff,
       daily: { byId, all },
+      /* 原始表（2026-10-14 新增）：给「更多」弹窗渲染明细表格用，
+         每次心跳随模型整体替换，弹窗打开时拿到的永远是最新值。 */
+      tables: {
+        web: chanRaws.web,
+        referral: chanRaws.referral,
+        market: chanRaws.market,
+        groups: groupsRaw,
+      },
     };
     return {
       campaign: {

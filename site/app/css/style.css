@@ -269,6 +269,7 @@
         gap: var(--sp-3);
       }
       .kpi {
+        position: relative; /* 给「更多」按钮做定位锚点 */
         width: 446px;
         display: flex;
         align-items: center;
@@ -281,6 +282,135 @@
         );
         border: 1px solid var(--panel-border);
         border-radius: 10px;
+      }
+      /* 「更多」按钮（2026-10-14 新增）：网电/市场卡右上角，点击开明细弹窗 */
+      .more-btn {
+        position: absolute;
+        top: 5px;
+        right: 6px;
+        z-index: 5;
+        padding: 1px 10px;
+        font-family: inherit;
+        font-size: 12px;
+        line-height: 18px;
+        letter-spacing: 1px;
+        color: var(--gold-num);
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        border-radius: 999px;
+        cursor: pointer;
+        transition: 0.25s;
+      }
+      .more-btn:hover {
+        background: rgba(212, 175, 55, 0.28);
+        border-color: rgba(240, 207, 122, 0.9);
+      }
+
+      /* ══ 「更多」明细弹窗（挂在 #stage 内，随大屏等比缩放） ══ */
+      .modal-mask {
+        position: absolute;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(10, 2, 4, 0.66);
+      }
+      .modal-mask[hidden] {
+        display: none;
+      }
+      .modal-box {
+        width: 960px;
+        max-height: 82vh;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(
+          165deg,
+          rgba(122, 15, 20, 0.97),
+          rgba(24, 5, 9, 0.97)
+        );
+        border: 1px solid rgba(212, 175, 55, 0.55);
+        border-radius: 12px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+        overflow: hidden;
+      }
+      .modal-hd {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        padding: 12px 18px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      }
+      .modal-hd h3 {
+        flex: 1;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        color: #f0d48a;
+      }
+      .modal-close {
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-main);
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .modal-close:hover {
+        background: rgba(212, 175, 55, 0.25);
+      }
+      .modal-body {
+        overflow: auto;
+        padding: 6px 18px 18px;
+      }
+      .more-sec-title {
+        font-size: var(--t4);
+        color: #f0d48a;
+        letter-spacing: 2px;
+        margin: 14px 0 8px;
+      }
+      .more-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      .more-table th,
+      .more-table td {
+        border: 1px solid rgba(212, 175, 55, 0.22);
+        padding: 6px 10px;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .more-table th {
+        position: sticky;
+        top: 0;
+        background: #3a0a12;
+        color: #f0d48a;
+        font-weight: 600;
+        letter-spacing: 1px;
+      }
+      .more-table td:first-child,
+      .more-table th:first-child {
+        text-align: left;
+        position: sticky;
+        left: 0;
+        background: #300811;
+      }
+      .more-table tbody tr:nth-child(even) td {
+        background: rgba(255, 255, 255, 0.035);
+      }
+      .more-table td.num {
+        color: var(--gold-num);
+        font-variant-numeric: tabular-nums;
+      }
+      .more-empty {
+        font-size: var(--t5);
+        color: var(--text-dim);
+        padding: 12px 0;
       }
       /* 5 卡布局（2026-10-14 需求）：时间进度+今日数据 平分左栏 480 上方（各 228），
          市场卡固定 480 与下方「健康顾问业绩」面板(1408..1888)严格对齐；
