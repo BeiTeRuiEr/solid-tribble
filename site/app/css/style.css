@@ -396,9 +396,7 @@
       .more-table td:first-child,
       .more-table th:first-child {
         text-align: left;
-        position: sticky;
-        left: 0;
-        background: #300811;
+        color: var(--text-main);
       }
       .more-table tbody tr:nth-child(even) td {
         background: rgba(255, 255, 255, 0.035);
