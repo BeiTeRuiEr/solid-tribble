@@ -365,8 +365,8 @@
          两项分两行显示（2026-10-14 需求二）。 */
       const todayHTML = (s) =>
         s.todayRev == null
-          ? `<div class="t-line">今日初诊：—</div><div class="t-line">今日业绩：—</div>`
-          : `<div class="t-line">今日初诊：${fmtI(s.todayInit)}人</div><div class="t-line">今日业绩：${fmt2(s.todayRev)}万元</div>`;
+          ? `<div class="t-line">今日数据：—</div><div class="t-line">—</div>`
+          : `<div class="t-line">今日数据：${fmtI(s.todayInit)}人</div><div class="t-line">${fmt2(s.todayRev)}万元</div>`;
       STORES.forEach((s, i) => {
         const seg = SEGMENTS[i];
         const center = seg.start + H.SEG_SPAN / 2;
