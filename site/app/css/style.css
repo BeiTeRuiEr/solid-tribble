@@ -709,9 +709,16 @@
         align-items: center;
         gap: calc(var(--u) * 10);
         width: calc(var(--u) * 200); /* 2026-10-14 加宽：容纳新增的今日数据行 */
-        padding: calc(var(--u) * 10) calc(var(--u) * 14);
+        /* 下内边距加大（2026-10-14）：今日数据两行不能让最后一行贴着边框 */
+        padding: calc(var(--u) * 10) calc(var(--u) * 14) calc(var(--u) * 14);
         border-radius: calc(var(--u) * 10);
-        background: rgba(255, 255, 255, 0.055);
+        /* 底色改为接近不透明（2026-10-14）：原来是 0.055 透明度，背后的圆环弧段会透过来
+           在文字上形成一条横线，看起来像"数据顶出来"。 */
+        background: linear-gradient(
+          165deg,
+          rgba(122, 15, 20, 0.62),
+          rgba(38, 6, 11, 0.82)
+        );
         border: 1px solid rgba(212, 175, 55, 0.22);
         transform: translateY(-50%);
         transition:
@@ -754,7 +761,7 @@
         font-variant-numeric: tabular-nums;
       }
       .store-label .bar {
-        margin-top: calc(var(--u) * 5);
+        margin-top: calc(var(--u) * 6);
         height: calc(var(--u) * 4);
         border-radius: calc(var(--u) * 2);
         background: rgba(255, 255, 255, 0.15);
@@ -767,9 +774,9 @@
         border-radius: calc(var(--u) * 2);
         transition: width 1.6s cubic-bezier(0.22, 0.9, 0.35, 1);
       }
-      /* 今日数据（2026-10-14 新增）：今日初诊/今日业绩 两行 */
+      /* 今日数据（2026-10-14 新增）：今日初诊/今日业绩 两行，与进度条留出间距 */
       .store-label .today {
-        margin-top: calc(var(--u) * 3);
+        margin-top: calc(var(--u) * 6);
         display: flex;
         flex-direction: column;
         gap: calc(var(--u) * 1);
@@ -778,7 +785,7 @@
         font-size: calc(var(--u) * 12);
         color: var(--text-sub);
         letter-spacing: 0.5px;
-        line-height: 1.25;
+        line-height: 1.35;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
