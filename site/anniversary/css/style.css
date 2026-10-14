@@ -409,6 +409,9 @@
         flex-direction: column;
         gap: 0;
       }
+      /* 渠道 chip（市场/网电/老带新）比小组 chip 宽一档（2026-10-14 需求）：
+         保证「270人 · 目标 449人」这类完整文案放得下，一组/二组适当收缩。 */
+      .chip.chip-channel { flex: 1.35; }
       .chip-name {
         font-size: var(--t5);
         color: var(--text-sub);

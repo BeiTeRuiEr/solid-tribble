@@ -201,9 +201,11 @@
         c.kind === "group"
           ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · ${fmtMoney(c.revToday)}`
           : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(2)}%`;
+      /* 小组 chip 的条不再表示百分比（2026-10-14 需求）：恒为通长黄线做分隔；
+         渠道 chip 仍按完成率填充。 */
       const chipBarW = (c) =>
-        Math.round(clamp(c.kind === "group" ? c.share * 100 : c.rate, 0, 100));
-      const chipHTML = (c) => `<div class="chip">
+        c.kind === "group" ? 100 : Math.round(clamp(c.rate, 0, 100));
+      const chipHTML = (c) => `<div class="chip chip-${c.kind}">
             <div class="chip-name"><span class="dot" style="background:${c.color}"></span>${c.name}</div>
             <div class="chip-val">${chipLine1(c)}</div>
             <div class="chip-bar"><i data-w="${chipBarW(c)}"></i></div>
