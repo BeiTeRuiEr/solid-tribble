@@ -767,12 +767,18 @@
         border-radius: calc(var(--u) * 2);
         transition: width 1.6s cubic-bezier(0.22, 0.9, 0.35, 1);
       }
-      /* 今日数据行（2026-10-14 新增）：今日初诊/今日业绩 */
+      /* 今日数据（2026-10-14 新增）：今日初诊/今日业绩 两行 */
       .store-label .today {
-        margin-top: calc(var(--u) * 4);
+        margin-top: calc(var(--u) * 3);
+        display: flex;
+        flex-direction: column;
+        gap: calc(var(--u) * 1);
+      }
+      .store-label .today .t-line {
         font-size: calc(var(--u) * 12);
         color: var(--text-sub);
         letter-spacing: 0.5px;
+        line-height: 1.25;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

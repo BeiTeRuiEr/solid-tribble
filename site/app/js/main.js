@@ -361,11 +361,12 @@
       }
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */
-      /* 今日数据行（2026-10-14 需求）：今日初诊/今日业绩，取 BI 门店表各店实时列 */
-      const todayText = (s) =>
+      /* 今日数据行（2026-10-14 需求）：今日初诊/今日业绩，取 BI 门店表各店实时列。
+         两项分两行显示（2026-10-14 需求二）。 */
+      const todayHTML = (s) =>
         s.todayRev == null
-          ? "今日数据：—"
-          : `今日数据：${fmtI(s.todayInit)}人/${fmt2(s.todayRev)}万元`;
+          ? `<div class="t-line">今日初诊：—</div><div class="t-line">今日业绩：—</div>`
+          : `<div class="t-line">今日初诊：${fmtI(s.todayInit)}人</div><div class="t-line">今日业绩：${fmt2(s.todayRev)}万元</div>`;
       STORES.forEach((s, i) => {
         const seg = SEGMENTS[i];
         const center = seg.start + H.SEG_SPAN / 2;
@@ -380,7 +381,7 @@
             <div class="name">${s.name}</div>
             <div class="pct">0%</div>
             <div class="bar"><i style="background:${s.color}"></i></div>
-            <div class="today">${todayText(s)}</div>
+            <div class="today">${todayHTML(s)}</div>
           </div>`;
         heroMod.appendChild(el);
         labels[i] = el;
@@ -932,7 +933,7 @@
             labels[i].querySelector(".bar i").style.width =
               clamp(p, 0, 100) + "%";
             const tEl = labels[i].querySelector(".today");
-            if (tEl) tEl.textContent = todayText(s); // 心跳时同步今日初诊/今日业绩
+            if (tEl) tEl.innerHTML = todayHTML(s); // 心跳时同步今日初诊/今日业绩
           });
           const hp = lerp(fromHero, target, k);
           drawWaves(hp);
