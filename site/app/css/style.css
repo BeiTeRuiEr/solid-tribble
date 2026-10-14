@@ -708,7 +708,7 @@
         display: flex;
         align-items: center;
         gap: calc(var(--u) * 10);
-        width: calc(var(--u) * 200); /* 2026-10-14 加宽：容纳新增的今日数据行 */
+        width: calc(var(--u) * 178); /* 2026-10-14 改回原始宽度：加宽后会贴到圆环上 */
         /* 下内边距加大（2026-10-14）：今日数据两行不能让最后一行贴着边框 */
         padding: calc(var(--u) * 10) calc(var(--u) * 14) calc(var(--u) * 14);
         border-radius: calc(var(--u) * 10);
