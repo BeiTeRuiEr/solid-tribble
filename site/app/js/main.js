@@ -245,15 +245,38 @@
           ? String(v)
           : n.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
       };
+      /* ── 弹窗表格的显示加工（2026-10-15 用户要求）──
+         ① 两字门店名（医院 / 合计）中间补一个全角空格「　」，与「神华店」等
+            三字名等宽 —— 首字贴左、末字与三字名的末字对齐；
+         ② 表头去掉 BI 的「_总和」后缀：今日到诊_总和 → 今日到诊；
+         ③ 「完成率」列统一按百分比显示、保留 2 位小数。
+            ⚠ 各表口径不统一：web / market 是 0.316 这种小数，而 referral 的
+            门店行却是 51.32 这种百分数（合计行又回到 0.416），
+            所以按数值大小自动判别，不能一律 ×100。 */
+      const storeNameFix = (s) => (s.length === 2 ? `${s[0]}　${s[1]}` : s);
+      const headText = (c) => c.replace(/_总和/g, "");
+      const isRateCol = (c) => /完成率/.test(c);
+      const fmtRate = (v) => {
+        if (v === "" || v == null) return "—";
+        const n = +v;
+        return isNaN(n) ? String(v) : `${(n <= 1 ? n * 100 : n).toFixed(2)}%`;
+      };
       const tableHTML = (raw) => {
         const cols = (raw && raw.columns) || [];
         const rows = (raw && raw.rows) || [];
         if (!cols.length || !rows.length) return `<p class="more-empty">暂无数据</p>`;
-        const head = cols.map((c) => `<th>${c}</th>`).join("");
+        const head = cols.map((c) => `<th>${headText(c)}</th>`).join("");
         const body = rows
           .map((r) => {
             const tds = cols
-              .map((c, i) => `<td class="${i === 0 ? "" : "num"}">${fmtCell(r[c])}</td>`)
+              .map((c, i) => {
+                if (i === 0) {
+                  const v0 = r[c];
+                  const nm = v0 == null || v0 === "" ? "—" : String(v0).trim();
+                  return `<td>${storeNameFix(nm)}</td>`;
+                }
+                return `<td class="num">${isRateCol(c) ? fmtRate(r[c]) : fmtCell(r[c])}</td>`;
+              })
               .join("");
             return `<tr>${tds}</tr>`;
           })

@@ -393,10 +393,15 @@
         font-weight: 600;
         letter-spacing: 1px;
       }
+      /* 首列（门店 / 所属部门）：左对齐；2026-10-15 起字色与其余数字列统一为金色，
+         不再单独用正文色，避免整张表里第一列颜色突兀。 */
       .more-table td:first-child,
       .more-table th:first-child {
         text-align: left;
-        color: var(--text-main);
+      }
+      .more-table td:first-child {
+        color: var(--gold-num);
+        font-weight: 600;
       }
       .more-table tbody tr:nth-child(even) td {
         background: rgba(255, 255, 255, 0.035);
