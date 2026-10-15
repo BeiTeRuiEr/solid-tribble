@@ -434,14 +434,17 @@
         align-items: flex-start;      /* 防止 chip 被拉伸，保持各自内容高度 */
         padding-top: 8px;
       }
-      /* 时间进度：大字与「共 31 天」水平居中，小字行略下移 */
-      .kpi.kpi-w1 .kpi-days { font-size: 36px; letter-spacing: 0; line-height: 40px; }
+      /* 时间进度：大字与「共 31 天」水平居中；大字再下移一点（2026-10-15）
+         —— 行高 40→36 腾出 4px，配 margin-top:6px 把「第 X 天」下移约 4px，
+            「共 31 天」原地不动且不溢出：18+6+36+18 = 78，卡内 8→86。 */
+      .kpi.kpi-w1 .kpi-days { font-size: 36px; letter-spacing: 0; line-height: 36px; }
       .kpi.kpi-w1 .kpi-val {
         justify-content: center;
-        height: 40px;
-        line-height: 40px;
+        height: 36px;
+        line-height: 36px;
+        margin-top: 6px;
       }
-      .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 2px; }
+      .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 0; }
       /* 今日数据 / 累计初诊 大数字（2026-10-15：44 → 38） */
       .kpi.kpi-w1b .td-num { font-size: 38px; line-height: 40px; }
       .kpi.kpi-w1b .today-duo { height: auto; }
@@ -452,6 +455,13 @@
       .kpi.kpi-w4 { padding: 0 12px; }
       .kpi.kpi-w4 .kpi-ch { gap: 8px; }
       .kpi.kpi-w4 .chip-val b { font-size: 16px; }
+      /* 渠道卡（网电/老带新/市场/一二组）行距（2026-10-15）：
+         chip 内容原为 18+22+4+18 = 62px，卡内 8→70，下方空 18px 显得头重脚轻。
+         给三个子行各加 4px 上间距 → 74px（8→82），下方空 6px；
+         中间数据（人数行 / 进度条 / 今日行）整体下移，
+         而标题行位置不变，继续与「累计初诊」标题对齐。 */
+      .chip .chip-val,
+      .chip .chip-bar { margin-top: 4px; }
       .kpi-l {
         flex: 1;
         min-width: 0;
