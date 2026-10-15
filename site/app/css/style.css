@@ -419,16 +419,35 @@
       .kpi.kpi-w2,
       .kpi.kpi-w3 { flex: 1 1 0; width: auto; min-width: 0; }
       .kpi.kpi-w4 { flex: none; width: 480px; }
-      /* 时间进度卡变窄后：「第 X 天」尽量放大（卡内还要放圆环，36px 是不溢出的上限） */
-      .kpi.kpi-w1 .kpi-days { font-size: 36px; letter-spacing: 0; }
-      /* 2026-10-15 需求：大字与「共 31 天」相互居中对齐，小字略微下移 */
-      .kpi.kpi-w1 .kpi-val { justify-content: center; }
-      .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 3px; }
-      /* 今日数据 / 累计初诊 的大数字缩小 1~2 号（2026-10-15 需求）：44 → 38 */
-      .kpi.kpi-w1b .td-num { font-size: 38px; line-height: 42px; }
-      .kpi.kpi-w1b .today-duo { height: 42px; }
-      .kpi.kpi-w2 .kpi-val { line-height: 42px; height: 42px; }
-      .kpi.kpi-w2 .kpi-val .num { font-size: 38px; line-height: 42px; }
+      /* ── KPI 行「标题落位」统一（2026-10-15）──
+         卡片固定 88px 高：把三张文字卡的内容列(.kpi-l) 与两张渠道卡(.kpi-ch)
+         都改成「顶部对齐 + 8px 上边距」，这样「时间进度 / 今日数据 / 累计初诊」
+         三个标签与渠道 chip 标题（网电 / 老带新 / 市场 / 市场一组 / 市场二组）
+         会落在同一条水平线上；内容整体略微下移，不再顶在卡片上沿。 */
+      .kpi .kpi-l {
+        align-self: stretch;          /* 撑满卡高（88px），内部再顶部对齐 */
+        justify-content: flex-start;
+        padding-top: 8px;
+      }
+      .kpi .kpi-ch {
+        align-self: stretch;
+        align-items: flex-start;      /* 防止 chip 被拉伸，保持各自内容高度 */
+        padding-top: 8px;
+      }
+      /* 时间进度：大字与「共 31 天」水平居中，小字行略下移 */
+      .kpi.kpi-w1 .kpi-days { font-size: 36px; letter-spacing: 0; line-height: 40px; }
+      .kpi.kpi-w1 .kpi-val {
+        justify-content: center;
+        height: 40px;
+        line-height: 40px;
+      }
+      .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 2px; }
+      /* 今日数据 / 累计初诊 大数字（2026-10-15：44 → 38） */
+      .kpi.kpi-w1b .td-num { font-size: 38px; line-height: 40px; }
+      .kpi.kpi-w1b .today-duo { height: auto; }
+      .kpi.kpi-w1b .td-cap { line-height: 18px; }
+      .kpi.kpi-w2 .kpi-val { line-height: 40px; height: 40px; }
+      .kpi.kpi-w2 .kpi-val .num { font-size: 38px; line-height: 40px; }
       /* 市场卡（3 枚 chip）：缩内边距/间距/数字字号，chip 超宽走省略号 */
       .kpi.kpi-w4 { padding: 0 12px; }
       .kpi.kpi-w4 .kpi-ch { gap: 8px; }
@@ -473,8 +492,8 @@
         text-shadow: 0 0 12px rgba(245, 180, 80, 0.32);
         white-space: nowrap;
       }
-      /* 第 2 卡（今日数据，2026-10-14 新增）：今日初诊 / 今日业绩 双列 */
-      .kpi.kpi-w1b .kpi-l { height: 82px; } /* 与累计初诊卡(label+val+sub=82)同高，标题行对齐 */
+      /* 第 2 卡（今日数据，2026-10-14 新增）：今日初诊 / 今日业绩 双列
+         （高度与垂直居中统一由上面的 .kpi .kpi-l 规则控制） */
       .today-duo {
         display: flex;
         align-items: flex-end;
