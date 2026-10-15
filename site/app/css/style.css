@@ -839,40 +839,19 @@
         width: 800px;
         height: 624px;
       }
-      .hero-title {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 12px;
-        height: var(--sp-4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--sp-2);
-        font-size: var(--t3);
-        letter-spacing: 6px;
-        color: #f0d48a;
-        white-space: nowrap;
-      }
-      .hero-title::before,
-      .hero-title::after {
-        content: "";
-        width: 56px;
-        height: 1px;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(212, 175, 55, 0.7)
-        );
-      }
-      .hero-title::after {
-        transform: scaleX(-1);
-      }
+      /* Hero 顶部金色标题「2026年10月 · 门店业绩达成」已于 2026-10-15 按需求删除
+         —— 元素已从 index.html 移除、装饰线(::before/::after)样式一并清除，
+            JS 侧同步改走 setTxt 判空，元素缺失也不会抛错白屏。 */
       .hero-mod {
         position: absolute;
         left: 0;
         right: 0;
-        top: 81px;
+        /* 标题删掉后整组重新居中：模块宽 800px，SVG 高 800×580/900 = 515.56px，
+           圆心（viewBox y = 320）距模块顶 263.1px；可用区是 0~604（下方
+           .hero-note 从 604 起），中心 302px，故 top = 302 − 263.1 ≈ 39px，
+           比原来的 81px 上移 42px。六个门店框关于圆心上下严格对称，
+           圆心落到可用区中心 = 门店框与圆环一起居中。 */
+        top: 39px;
         --u: 0.8889px;
       }
       .hero-mod svg.ring {

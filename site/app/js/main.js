@@ -113,7 +113,10 @@
       const dayFull = (i) => `${mdAt(i).m}月${mdAt(i).d}日`;
       const campMonth = `${CAMPAIGN.year}年${CAMPAIGN.month}月`;
       $("subTitle").textContent = `13周年庆数据看板 · ${campMonth}`;
-      $("heroTitle").textContent = `${campMonth} · 门店业绩达成`;
+      /* heroTitle 元素已于 2026-10-15 按需求删除（标题改为只留顶部副标题），
+         这里必须走判空安全的 setTxt —— 直接 $("heroTitle").textContent 会在
+         元素缺失时抛错，把整个 module 渲染打断成白屏（历史上踩过一次）。 */
+      setTxt("heroTitle", `${campMonth} · 门店业绩达成`);
       $("trendTag").textContent = `${dayFull(0)} – ${dayFull(D - 1)} · 万元`;
       const sumOf = (arr, fn) => arr.reduce((a, x) => a + fn(x), 0);
       const totalBase = DATA.totals.totalBase;
