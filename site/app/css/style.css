@@ -414,13 +414,21 @@
          市场卡固定 480 与下方「健康顾问业绩」面板(1408..1888)严格对齐；
          累计初诊/网电 flex 等宽平分剩余（(1856-4×24-228×2-480)/2 = 412）。
          228+228+412×2+480 + 4×24(卡间距) = 1856 = .kpis 宽度，行内仍是通栏闭合。 */
-      .kpi.kpi-w1 { width: 228px; padding: 0 12px; }
+      .kpi.kpi-w1 { width: 228px; padding: 0 6px 0 12px; } /* 右内边距收窄：圆环右移一点 */
       .kpi.kpi-w1b { width: 228px; padding: 0 12px; }
       .kpi.kpi-w2,
       .kpi.kpi-w3 { flex: 1 1 0; width: auto; min-width: 0; }
       .kpi.kpi-w4 { flex: none; width: 480px; }
       /* 时间进度卡变窄后：「第 X 天」尽量放大（卡内还要放圆环，36px 是不溢出的上限） */
       .kpi.kpi-w1 .kpi-days { font-size: 36px; letter-spacing: 0; }
+      /* 2026-10-15 需求：大字与「共 31 天」相互居中对齐，小字略微下移 */
+      .kpi.kpi-w1 .kpi-val { justify-content: center; }
+      .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 3px; }
+      /* 今日数据 / 累计初诊 的大数字缩小 1~2 号（2026-10-15 需求）：44 → 38 */
+      .kpi.kpi-w1b .td-num { font-size: 38px; line-height: 42px; }
+      .kpi.kpi-w1b .today-duo { height: 42px; }
+      .kpi.kpi-w2 .kpi-val { line-height: 42px; height: 42px; }
+      .kpi.kpi-w2 .kpi-val .num { font-size: 38px; line-height: 42px; }
       /* 市场卡（3 枚 chip）：缩内边距/间距/数字字号，chip 超宽走省略号 */
       .kpi.kpi-w4 { padding: 0 12px; }
       .kpi.kpi-w4 .kpi-ch { gap: 8px; }
@@ -544,9 +552,10 @@
          保证「270人 · 目标 449人」这类完整文案放得下，一组/二组适当收缩。 */
       .chip.chip-channel { flex: 1.35; }
       .chip-name {
+        /* 2026-10-15 需求：与「累计初诊」等 KPI 标题字样完全一致 */
         font-size: var(--t5);
         color: var(--text-sub);
-        letter-spacing: 2px;
+        letter-spacing: 3px;
         line-height: 18px;
         display: flex;
         align-items: center;
