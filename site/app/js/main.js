@@ -23,6 +23,11 @@
         const el = $(id);
         if (el) el.textContent = txt;
       };
+      /* 写 HTML 片段的空值安全版（判空同上，避免缺元素时整页崩） */
+      const setHTML = (id, html) => {
+        const el = $(id);
+        if (el) el.innerHTML = html;
+      };
       const ANIM = !/[?&]static=1/.test(location.search);
       if (!ANIM) document.documentElement.classList.add("noanim");
       /* 数据心跳：间隔与初始拍（调试参数） */
@@ -185,8 +190,10 @@
       }
       const drawRT = buildRing($("rTime"), KPI.timePct, "#e8c25f");
       const drawRI = buildRing($("rInit"), KPI.initPct, "#e8c25f");
-      /* 时间进度卡：大字位显示「第 X 天」，下一行小字「共 31 天」（2026-10-14 需求） */
-      const daysText = (n) => `第 ${Math.round(n)} 天`;
+      /* 时间进度卡：大字位显示「第 X 天」，下一行小字「共 31 天」（2026-10-14 需求）
+         2026-10-15：第/天用小字号、天数数字用大字号并加强发光，突出数字本身。 */
+      const daysHTML = (n) =>
+        `<i class="kd-t">第</i><b class="kd-n">${Math.round(n)}</b><i class="kd-t">天</i>`;
       setTxt("vDaysTotal", `共 ${D} 天`);
       setTxt("subInit", `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtY(KPI.avgTicket)} 元`);
 
@@ -869,7 +876,7 @@
        * ══════════════════════════════════════════════════════════ */
       (function entrance() {
         const setNumbers = (k) => {
-          setTxt("vDays", daysText(T * k));
+          setHTML("vDays", daysHTML(T * k));
           setTxt("vInit", fmtI(totalInit * k));
           setTxt("vTodayInit", fmtI(DATA.kpi.todayInit * k));
           setTxt("vTodayRev", fmt2(DATA.kpi.todayRev * k));
@@ -952,7 +959,7 @@
             parseFloat((el.textContent + "").replace(/[^\d.-]/g, "")) || 0;
           tweenNum(el, from, to, fmt);
         };
-        setTxt("vDays", daysText(T));
+        setHTML("vDays", daysHTML(T));
         setN("vInit", m.totalInit, fmtI);
         setN("vTodayInit", m.kpi.todayInit, fmtI);
         setN("vTodayRev", m.kpi.todayRev, fmt2);

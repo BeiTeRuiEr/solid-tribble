@@ -434,17 +434,37 @@
         align-items: flex-start;      /* 防止 chip 被拉伸，保持各自内容高度 */
         padding-top: 8px;
       }
-      /* 时间进度：大字与「共 31 天」水平居中；大字再下移一点（2026-10-15）
-         —— 行高 40→36 腾出 4px，配 margin-top:6px 把「第 X 天」下移约 4px，
-            「共 31 天」原地不动且不溢出：18+6+36+18 = 78，卡内 8→86。 */
-      .kpi.kpi-w1 .kpi-days { font-size: 36px; letter-spacing: 0; line-height: 36px; }
+      /* 时间进度：「第 X 天」混合字号（2026-10-15）
+         —— 「第」「天」缩到 24px、天数数字放大到 40px 并加强外发光，数字更亮眼；
+            数字行盒 42px + margin-top 4px，「共 31 天」行高收 14px，
+            合计 18+4+42+14 = 78，卡内 8→86，底部仍留 2px 不溢出。 */
+      .kpi.kpi-w1 .kpi-days { letter-spacing: 0; line-height: 42px; }
       .kpi.kpi-w1 .kpi-val {
         justify-content: center;
-        height: 36px;
-        line-height: 36px;
-        margin-top: 6px;
+        height: 42px;
+        line-height: 42px;
+        margin-top: 4px;
       }
-      .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 0; }
+      .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 0; line-height: 14px; }
+      /* 「第」「天」：小字号，与数字同基线 */
+      .kpi.kpi-w1 .kd-t {
+        font-size: 24px;
+        font-style: normal; /* <i> 默认斜体，必须复位 */
+        font-weight: 700;
+        line-height: 42px;
+        margin: 0 4px;
+      }
+      /* 天数数字：大字号 + 双层外发光，突出数字本身 */
+      .kpi.kpi-w1 .kd-n {
+        font-size: 40px;
+        font-weight: 700;
+        line-height: 42px;
+        letter-spacing: 0;
+        color: var(--gold-num);
+        text-shadow:
+          0 0 6px rgba(245, 180, 80, 0.45),
+          0 0 18px rgba(245, 180, 80, 0.6);
+      }
       /* 今日数据 / 累计初诊 大数字（2026-10-15：44 → 38） */
       .kpi.kpi-w1b .td-num { font-size: 38px; line-height: 40px; }
       .kpi.kpi-w1b .today-duo { height: auto; }
