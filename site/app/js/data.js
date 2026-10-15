@@ -79,16 +79,39 @@
      看板现在位于站点根目录（https://beiteruier.github.io/solid-tribble/），
      所以首选 "data/"；本地双击打开 / 任意静态服务器时用绝对地址兜底。 */
   const BASES = ["data/", "https://beiteruier.github.io/solid-tribble/data/"];
+  const RETRY_MAX = 3; // 429 / 网络抖动时的重试次数
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  async function fetchJSON(file) {
+  /* 取一个 JSON。
+     fresh = false（首次加载）：URL 不带时间戳 → 命中 CDN 边缘缓存（max-age=600）。
+         这一点很关键 —— 同一办公室几十个人同时点开时，请求全在边缘解决，不回源，
+         也就不会撞上 GitHub Pages 对「单 IP 请求速率」的限流。
+     fresh = true （数据心跳）：URL 带 ?t= 强制绕过缓存，保证拿到 CI 刚更新的数据。
+         心跳是每人 8 分钟 1 次，量很小，可以放心直连源站。
+     429 是 Pages 的限流响应，这里做指数退避（0.8s → 1.6s → 3.2s + 抖动）重试，
+     避免偶发限流直接让整页空白。
+     注意 4xx（除 429 外）不做重试 —— 尤其是 404：文件确实不存在，重试只是白等，
+     会拖慢 bundle 缺失时的回退路径。只重试 429、5xx 和网络错误。 */
+  async function fetchJSON(file, fresh) {
     let lastErr;
     for (const base of BASES) {
-      try {
-        const res = await fetch(base + file + ".json?t=" + Date.now());
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return await res.json();
-      } catch (e) {
-        lastErr = e;
+      for (let attempt = 0; attempt <= RETRY_MAX; attempt++) {
+        const url = base + file + ".json" + (fresh ? "?t=" + Date.now() : "");
+        try {
+          const res = await fetch(url);
+          if (res.status === 429) throw new Error("HTTP 429 限流"); // 可重试
+          if (!res.ok) {
+            // 4xx 是确定性失败，重试没有意义；标记 fatal 让下面的 catch 直接跳出
+            const e = new Error("HTTP " + res.status);
+            e.fatal = res.status >= 400 && res.status < 500;
+            throw e;
+          }
+          return await res.json();
+        } catch (e) {
+          lastErr = e;
+          if (e.fatal || attempt === RETRY_MAX) break; // fatal 直接换下一个 base
+          await wait(800 * Math.pow(2, attempt) + Math.random() * 400);
+        }
       }
     }
     throw new Error("取数失败: " + file + " (" + lastErr + ")");
@@ -418,7 +441,24 @@
     };
   }
 
-  async function loadDashboardData() {
+  const TABLES = ["stores", "consults", "doctors", "web", "market", "referral", "market_groups", "daily"];
+
+  /* 取 8 张表（2026-10-15）：优先读 CI 合并好的 bundle.json —— 1 个请求而不是 8 个。
+     这是给「同一办公室多人同时刷新」降限流风险用的。
+     bundle 不存在 / 不完整时自动回退到逐个抓，老数据目录仍保留着，兼容没有 bundle 的部署。 */
+  async function loadAllTables(fresh) {
+    try {
+      const b = await fetchJSON("bundle", fresh);
+      if (b && TABLES.every((t) => b[t])) return TABLES.map((t) => b[t]);
+      console.warn("bundle.json 不完整，回退逐个抓取");
+    } catch (e) {
+      console.warn("bundle.json 取数失败，回退逐个抓取", e);
+    }
+    return Promise.all(TABLES.map((t) => fetchJSON(t, fresh)));
+  }
+
+  async function loadDashboardData(opts) {
+    const fresh = !!(opts && opts.fresh); // 心跳传 {fresh:true} 绕过缓存；首次加载走边缘缓存
     const [
       storesRaw,
       consultsRaw,
@@ -428,16 +468,7 @@
       referralRaw,
       groupsRaw,
       dailyRaw,
-    ] = await Promise.all([
-      fetchJSON("stores"),
-      fetchJSON("consults"),
-      fetchJSON("doctors"),
-      fetchJSON("web"),
-      fetchJSON("market"),
-      fetchJSON("referral"),
-      fetchJSON("market_groups"),
-      fetchJSON("daily"),
-    ]);
+    ] = await loadAllTables(fresh);
     const out = buildModel(
       storesRaw,
       consultsRaw,

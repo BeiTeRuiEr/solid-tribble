@@ -108,6 +108,13 @@ jobs:
           playwright install --with-deps chromium
           python scripts/fetch_data.py || python scripts/fetch_data_dom.py
 
+      # 把 8 张表合并成一个 bundle.json（2026-10-15）：
+      # GitHub Pages 对「单个来源 IP 的请求速率」限流（实测 18 req/s 正常、171 req/s 返 429），
+      # 而门店/办公室是同一个公网出口 IP。合并后单次打开的请求数 12 → 5，限流余量提升 2.4 倍。
+      # 必须放在「Commit data」之前 —— 下面的 git add site/data/*.json 会把 bundle.json 一起提交。
+      - name: Build data bundle
+        run: python scripts/make_bundle.py
+
       - name: Commit data
         run: |
           git config user.name "github-actions[bot]"
