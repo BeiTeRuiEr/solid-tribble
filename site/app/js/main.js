@@ -1122,7 +1122,7 @@
         hbT = 0;
       setInterval(() => {
         if (performance.now() < ENTRANCE_END) return;
-        loadDashboardData({ fresh: true }) // 心跳要拿 CI 刚更新的数据，绕过 CDN 缓存
+        loadDashboardData() // 心跳：走 cache:"no-cache" 条件重验证，保证拿到 CI 刚更新的数据
           .then((fresh) => {
             if (fresh.campaign.today !== T) {
               location.reload(); // 跨天：整页重载，时间轴按新天数重排
