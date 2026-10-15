@@ -685,13 +685,21 @@
       renderRevisitRows(MODEL, false);
 
       /* ══════════════════════════════════════════════════════════
-       * ⑧ 右栏：顾问 / 医生 TOP7（28px 行，7 行闭合）
+       * ⑧ 右栏：顾问 / 医生排行（28~30px 行，首屏 7 行，可滚轮下翻看全部）
        * ══════════════════════════════════════════════════════════ */
       function renderRank(containerId, items, setW) {
-        const max = Math.max(...items.map((p) => p.amount));
+        const box = $(containerId);
+        if (!box) return; // 判空：缺元素不拖垮整板
+        const list = items || [];
+        const max = list.length
+          ? Math.max(...list.map((p) => p.amount))
+          : 1; // 空列表时不要让 max 变成 -Infinity
         const colorOf = (p) =>
           (STORES.find((s) => s.name === p.store) || {}).color || "#d4af37";
-        $(containerId).innerHTML = items
+        /* 心跳（约每 8 分钟）会整块重写 innerHTML，必须先把 scrollTop 存下再还原，
+           否则用户正往下翻时会被无声弹回顶部。 */
+        const keepTop = box.scrollTop;
+        box.innerHTML = list
           .map(
             (p, i) => `<div class="rk-row has-store">
               <span class="rk-badge ${i < 3 ? "r" + (i + 1) : ""}">${i + 1}</span>
@@ -702,13 +710,18 @@
             </div>`,
           )
           .join("");
+        box.scrollTop = keepTop;
         if (setW)
-          $(containerId)
-            .querySelectorAll("i[data-w]")
-            .forEach((el) => (el.style.width = el.dataset.w + "%"));
+          box.querySelectorAll("i[data-w]").forEach((el) => (el.style.width = el.dataset.w + "%"));
       }
+      /* 面板右上角标签：原为「TOP7 · 累计万元」，现按实际人数显示（2026-10-15） */
+      const rankTag = (m) => {
+        setTxt("tagConsult", `全部 ${m.staff.consultants.length} 人 · 累计万元`);
+        setTxt("tagDoctor", `全部 ${m.staff.doctors.length} 人 · 累计万元`);
+      };
       renderRank("rowsConsult", MODEL.staff.consultants, false);
       renderRank("rowsDoctor", MODEL.staff.doctors, false);
+      rankTag(MODEL);
 
       /* ══════════════════════════════════════════════════════════
        * ⑨ 底部折线：尺寸由容器反算，杜绝溢出
@@ -1091,6 +1104,7 @@
         updateRevRows(m, animate);
         renderRevisitRows(m, true);
         beatFade($("rowsRevisit"));
+        rankTag(m);
         renderRank("rowsConsult", m.staff.consultants, true);
         beatFade($("rowsConsult"));
         renderRank("rowsDoctor", m.staff.doctors, true);

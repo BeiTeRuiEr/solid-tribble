@@ -311,19 +311,20 @@
         .filter(Boolean),
     }));
 
-    /* ── 咨询/医生 TOP7：按实收金额降序；BI 无门店列，tag 放业绩完成率 ── */
-    const top7 = (rows, nameKey, amtKey) =>
+    /* ── 咨询/医生排行：按实收金额降序；BI 无门店列，tag 放业绩完成率。
+       2026-10-15：不再截断 TOP7 —— 输出全部人员，由面板内部滚动查看
+       （咨询 17 人、医生 38 人；榜单满 7 行后仍在同一容器内继续滚动）。 ── */
+    const rankAll = (rows, nameKey, amtKey) =>
       rows
         .map((r) => ({
           name: r[nameKey],
           tag: (num(r["业绩完成率"]) * 100).toFixed(0) + "%",
           amount: num(r[amtKey]) / 1e4, // 万
         }))
-        .sort((a, b) => b.amount - a.amount)
-        .slice(0, 7);
+        .sort((a, b) => b.amount - a.amount);
     const staff = {
-      consultants: top7(consultsRaw.rows, "咨询人员", "实收金额"),
-      doctors: top7(doctorsRaw.rows, "医生", "医生业绩"),
+      consultants: rankAll(consultsRaw.rows, "咨询人员", "实收金额"),
+      doctors: rankAll(doctorsRaw.rows, "医生", "医生业绩"),
     };
 
     /* ── 每日实收（动态活动窗口）：daily.json 时间形如"2026年10月13日"，元 → 万。

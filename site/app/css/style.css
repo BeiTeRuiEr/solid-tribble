@@ -740,15 +740,37 @@
         white-space: nowrap;
       }
 
-      /* ══════════ ⑦ 右栏：排名行（28px 闭合） ══════════ */
+      /* ══════════ ⑦ 右栏：排名行（30px 行，首屏 7 行，可滚轮下翻看全部） ══════════ */
       .rk-rows {
         height: calc(100% - var(--hd-h));
         padding: var(--sp-2) 0;
         display: flex;
         flex-direction: column;
-        /* gap 2 + 行高 30：7 行正好填满容器(254px)，与左栏 32px 行视觉规格一致。
+        /* gap 2 + 行高 30：首屏 7 行正好填满容器(254px)，与左栏 32px 行视觉规格一致。
            曾经是 28px 行 + gap 4（没填满），且比左栏小一圈，看板上左右不对称。 */
         gap: 2px;
+        /* 2026-10-15：人员不再截断 TOP7，全部渲染进来，超出部分在本面板内滚轮下翻。
+           首屏仍是 7 行（视觉不变），只是下面还有内容。 */
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain; /* 滚到底不把滚动传给外层 */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(212, 175, 55, 0.5) transparent;
+      }
+      /* 金色细滚动条（Chromium/WebKit） */
+      .rk-rows::-webkit-scrollbar {
+        width: 6px;
+      }
+      .rk-rows::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 3px;
+      }
+      .rk-rows::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.5);
+        border-radius: 3px;
+      }
+      .rk-rows::-webkit-scrollbar-thumb:hover {
+        background: rgba(240, 207, 122, 0.75);
       }
       .rk-row {
         flex: none;
