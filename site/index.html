@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261016-7" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261016-8" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -360,7 +360,15 @@
         <div class="panel-hd" data-page-node-id="uOcdFUICFULbVEim69jLhf">
           <h3 data-page-node-id="PXQI3zoMDydTjfKYFMge5v">健康顾问业绩</h3>
           <span class="hline" data-page-node-id="BKbFTxDVNHv76pxE9Rf3qr"></span>
-          <span class="tag" id="tagConsult" data-page-node-id="scFnl15bqPgjUEw5bwAO5I">累计万元</span>
+          <!-- 2026-10-16 需求：右上角标签下方加排序切换（完成率 / 业绩），初始「完成率」。
+               tag 与 .seg 一起竖着排在 .hd-col 里，右缘与原来「累计万元」位置一致。 -->
+          <div class="hd-col">
+            <span class="tag" id="tagConsult" data-page-node-id="scFnl15bqPgjUEw5bwAO5I">全部 16 人 · 单位：万元</span>
+            <div class="seg" data-rank="rowsConsult">
+              <button type="button" class="seg-btn on" data-by="pct">完成率</button>
+              <button type="button" class="seg-btn" data-by="amount">业绩</button>
+            </div>
+          </div>
         </div>
         <div class="rk-rows" id="rowsConsult" data-page-node-id="eIhjYHHNaf2bXhnruvDbFs"></div>
       </section>
@@ -373,7 +381,14 @@
         <div class="panel-hd" data-page-node-id="IjDSf5qnbT3bcYrxnxmnRA">
           <h3 data-page-node-id="Q0sSzF1gGajtAcdxzGbIRA">医生业绩</h3>
           <span class="hline" data-page-node-id="9EmBxb9q80FfxQWtfCSAIh"></span>
-          <span class="tag" id="tagDoctor" data-page-node-id="x02npfRNWDVHyEkIwSiJ5l">累计万元</span>
+          <!-- 与「健康顾问业绩」同构（2026-10-16）：两块面板的排序各自独立，互不影响。 -->
+          <div class="hd-col">
+            <span class="tag" id="tagDoctor" data-page-node-id="x02npfRNWDVHyEkIwSiJ5l">全部 38 人 · 单位：万元</span>
+            <div class="seg" data-rank="rowsDoctor">
+              <button type="button" class="seg-btn on" data-by="pct">完成率</button>
+              <button type="button" class="seg-btn" data-by="amount">业绩</button>
+            </div>
+          </div>
         </div>
         <div class="rk-rows" id="rowsDoctor" data-page-node-id="4jyv3nmACCBaUFkffHQNrL"></div>
       </section>
@@ -487,7 +502,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261016-7"></script>
-    <script type="module" src="app/js/main.js?v=20261016-7"></script>
+        <script src="app/js/data.js?v=20261016-8"></script>
+    <script type="module" src="app/js/main.js?v=20261016-8"></script>
   </body>
 </html>

@@ -136,6 +136,45 @@
         color: var(--text-dim);
         white-space: nowrap;
       }
+      /* 右上角「标签 + 排序按钮」竖排容器（2026-10-16 需求）：
+         tag 仍在最上且右缘贴面板内边距，按钮组挂在它下面；整体右对齐，
+         tag 的右端位置与改造前（单独的 .tag）逐像素一致。
+         高度预算：46px 面板头里放 tag 18 + gap 3 + 按钮 22 = 43，不撑破头高。 */
+      .panel-hd .hd-col {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 3px;
+      }
+      .panel-hd .hd-col .tag {
+        line-height: 18px;
+      }
+      .seg {
+        display: flex;
+        gap: 4px;
+      }
+      .seg-btn {
+        font: 500 var(--t5) / 16px var(--num-font);
+        color: var(--text-sub);
+        background: rgba(212, 175, 55, 0.1);
+        border: 1px solid rgba(212, 175, 55, 0.38);
+        border-radius: 4px;
+        padding: 2px 8px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .seg-btn:hover {
+        background: rgba(212, 175, 55, 0.2);
+        color: var(--text-main);
+      }
+      /* 选中态：与「更多」按钮/金色强调同一套渐变 */
+      .seg-btn.on {
+        background: linear-gradient(180deg, #e8c25f, #c9a227);
+        border-color: transparent;
+        color: #3a2506;
+        font-weight: 600;
+      }
 
       /* 入场：JS 逐个加 .in */
       .rv {
@@ -799,7 +838,10 @@
         border-radius: 6px;
       }
       .rk-row.has-store {
-        grid-template-columns: 22px 62px 48px 1fr 56px;
+        /* 2026-10-16 需求：业绩与百分比换位（业绩在前、百分比在后），
+           列序 = 名次 22 | 姓名 62 | 业绩 60 | 条形 1fr | 完成率 56。
+           列宽取 56 是为了容下三位数完成率（如 169.60%，实测约 50px）。 */
+        grid-template-columns: 22px 62px 60px 1fr 56px;
       }
       .rk-row:nth-child(odd) {
         background: rgba(255, 255, 255, 0.03);
@@ -837,9 +879,13 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .rk-store {
-        font-size: var(--t5);
-        color: var(--text-dim);
+      /* 完成率（行尾）：字号/字重/颜色与左栏「业绩进度」的 .sp-pct 完全一致
+         —— 2026-10-16 需求要求两处百分比格式统一（14px / 700 / tabular / 金色 / 两位小数）。
+         原来这里是取整数的 .rk-store（如「44%」），已废弃。 */
+      .rk-pct {
+        text-align: right;
+        font: 700 var(--t5) var(--num-font);
+        color: var(--gold-num);
         white-space: nowrap;
       }
       .rk-bar {
@@ -857,16 +903,13 @@
         opacity: 0.88;
         transition: width 1.4s cubic-bezier(0.22, 0.9, 0.35, 1);
       }
+      /* 业绩（万元）：2026-10-16 起不带「万」字（单位已写在面板头 tag 里），
+         与左栏「业绩进度」行内文案的处理一致。 */
       .rk-val {
         font: 600 var(--t5) var(--num-font);
         color: var(--text-main);
         text-align: right;
         white-space: nowrap;
-      }
-      .rk-val small {
-        font-size: var(--t5);
-        color: var(--text-dim);
-        margin-left: 1px;
       }
 
       /* ══════════ ⑧ 中央 Hero（参考图1 范式） ══════════ */

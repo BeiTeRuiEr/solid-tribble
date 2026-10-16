@@ -701,13 +701,26 @@
       /* ══════════════════════════════════════════════════════════
        * ⑧ 右栏：顾问 / 医生排行（28~30px 行，首屏 7 行，可滚轮下翻看全部）
        * ══════════════════════════════════════════════════════════ */
+      /* 排行面板的排序模式（2026-10-16 需求）：两块面板各自独立，初始「完成率」。
+         pct = 业绩完成率（%）；amount = 业绩（万）。
+         排序状态放在模块级：心跳重渲染（renderRank 被再次调用）时不会丢，
+         用户切到「业绩」后一直保持。 */
+      const RANK_MODE = { rowsConsult: "pct", rowsDoctor: "pct" };
+      const RANK_ITEMS = {}; // containerId → 最近一次的数据，供按钮切换时原地重排
+
       function renderRank(containerId, items, setW) {
         const box = $(containerId);
         if (!box) return; // 判空：缺元素不拖垮整板
-        const list = items || [];
-        const max = list.length
-          ? Math.max(...list.map((p) => p.amount))
-          : 1; // 空列表时不要让 max 变成 -Infinity
+        const src = items || [];
+        RANK_ITEMS[containerId] = src;
+        const by = RANK_MODE[containerId] || "pct";
+        /* 按当前模式降序；主指标并列时用另一个指标兜底，
+           避免一堆 0.00% 的人每次心跳顺序乱跳（B 端看板最忌行号漂移）。 */
+        const list = [...src].sort((a, b) =>
+          by === "amount"
+            ? b.amount - a.amount || b.pct - a.pct
+            : b.pct - a.pct || b.amount - a.amount,
+        );
         const colorOf = (p) =>
           (STORES.find((s) => s.name === p.store) || {}).color || "#d4af37";
         /* 心跳（约每 8 分钟）会整块重写 innerHTML，必须先把 scrollTop 存下再还原，
@@ -718,9 +731,9 @@
             (p, i) => `<div class="rk-row has-store">
               <span class="rk-badge ${i < 3 ? "r" + (i + 1) : ""}">${i + 1}</span>
               <span class="rk-name">${p.name}</span>
-              <span class="rk-store">${p.tag || ""}</span>
-              <span class="rk-bar"><i data-w="${((p.amount / max) * 100).toFixed(1)}" style="--c:${colorOf(p)}"></i></span>
-              <span class="rk-val">${fmtW(p.amount)}<small>万</small></span>
+              <span class="rk-val">${fmtW(p.amount)}</span>
+              <span class="rk-bar"><i data-w="${clamp(p.pct, 0, 100).toFixed(1)}" style="--c:${colorOf(p)}"></i></span>
+              <span class="rk-pct">${p.pct.toFixed(2)}%</span>
             </div>`,
           )
           .join("");
@@ -728,14 +741,32 @@
         if (setW)
           box.querySelectorAll("i[data-w]").forEach((el) => (el.style.width = el.dataset.w + "%"));
       }
-      /* 面板右上角标签：原为「TOP7 · 累计万元」，现按实际人数显示（2026-10-15） */
+      /* 面板右上角标签：2026-10-16 由「累计万元」改为「单位：万元」
+         （行内的「万」字同时去掉，单位只在这里声明一次）。 */
       const rankTag = (m) => {
-        setTxt("tagConsult", `全部 ${m.staff.consultants.length} 人 · 累计万元`);
-        setTxt("tagDoctor", `全部 ${m.staff.doctors.length} 人 · 累计万元`);
+        setTxt("tagConsult", `全部 ${m.staff.consultants.length} 人 · 单位：万元`);
+        setTxt("tagDoctor", `全部 ${m.staff.doctors.length} 人 · 单位：万元`);
       };
       renderRank("rowsConsult", MODEL.staff.consultants, false);
       renderRank("rowsDoctor", MODEL.staff.doctors, false);
       rankTag(MODEL);
+      /* 排序按钮：完成率 / 业绩。点击后原地重排该面板（另一块不受影响），
+         按钮高亮跟随；setW=true 让条形宽度直接落位，不重播 1.4s 过渡。 */
+      document.querySelectorAll(".seg[data-rank]").forEach((seg) => {
+        seg.addEventListener("click", (e) => {
+          const btn = e.target.closest(".seg-btn");
+          if (!btn) return;
+          const id = seg.dataset.rank;
+          const by = btn.dataset.by;
+          if (RANK_MODE[id] === by) return; // 已是该模式，不必重排
+          RANK_MODE[id] = by;
+          seg.querySelectorAll(".seg-btn").forEach((b) =>
+            b.classList.toggle("on", b === btn),
+          );
+          renderRank(id, RANK_ITEMS[id], true);
+          beatFade($(id));
+        });
+      });
 
       /* ══════════════════════════════════════════════════════════
        * ⑨ 底部折线：尺寸由容器反算，杜绝溢出
