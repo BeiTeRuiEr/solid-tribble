@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261015-9" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261016-1" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -147,7 +147,6 @@
                 <div class="td-line"><span class="td-num" id="vTodayInit">0</span><span class="td-unit">人</span></div>
                 <div class="td-cap">今日初诊</div>
               </div>
-              <div class="td-sep"></div>
               <div class="td-item">
                 <div class="td-line"><span class="td-num" id="vTodayRev">0</span><span class="td-unit">万</span></div>
                 <div class="td-cap">今日业绩</div>
@@ -155,15 +154,25 @@
             </div>
           </div>
         </div>
+        <!-- 累计初诊 / 平均单体：2026-10-16 由原「累计初诊」单卡（412px）平均拆成两张 194px 卡。
+             194px 放不下 76px 圆环，所以两张卡都是「标签 + 大数字 + 小字」纯文字版式。 -->
         <div class="kpi kpi-w2 rv" data-page-node-id="KUwDDoYRsBBzJocgN3xbk4">
           <div class="kpi-l" data-page-node-id="MGHXHej9tQ5Hyuykaf9URP">
             <div class="kpi-label" data-page-node-id="w1z18vkmG5Nbth9sIqBwyG">累计初诊</div>
             <div class="kpi-val" data-page-node-id="rzB3d2FVG9kCjQAFVdoI1Y">
               <span class="num" id="vInit" data-page-node-id="fIbuGY6w7z44757RwI4yW1">0</span><span class="unit" data-page-node-id="ebtRX31nunjrN7MkISvLin">人</span>
             </div>
-            <div class="kpi-sub" id="subInit" data-page-node-id="tzTCCbZm5sNMX1L8b9eey3">客单 — 元</div>
+            <div class="kpi-sub" id="subInit" data-page-node-id="tzTCCbZm5sNMX1L8b9eey3">基础 — 人</div>
           </div>
-          <svg class="kpi-ring" id="rInit" viewBox="0 0 76 76" data-page-node-id="oSgAc6CB6fNtqqdUA3VIWz"></svg>
+        </div>
+        <div class="kpi kpi-w2b rv">
+          <div class="kpi-l">
+            <div class="kpi-label">平均单体</div>
+            <div class="kpi-val">
+              <span class="num" id="vAvgTicket">0</span><span class="unit">元</span>
+            </div>
+            <div class="kpi-sub">业绩 ÷ 初诊</div>
+          </div>
         </div>
         <div class="kpi kpi-w3 rv" data-page-node-id="k71qaQ9eMRFucWOAYcyMGH">
           <div class="kpi-ch" id="chChipsA" data-page-node-id="TKcTfXJ90g9bT6nKtFfv62"></div>
@@ -473,7 +482,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261015-9"></script>
-    <script type="module" src="app/js/main.js?v=20261015-9"></script>
+        <script src="app/js/data.js?v=20261016-1"></script>
+    <script type="module" src="app/js/main.js?v=20261016-1"></script>
   </body>
 </html>

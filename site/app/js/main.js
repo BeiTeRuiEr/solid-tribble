@@ -192,13 +192,22 @@
         };
       }
       const drawRT = buildRing($("rTime"), KPI.timePct, "#e8c25f");
+      /* 「累计初诊」卡的初诊完成率圆环（#rInit）已于 2026-10-16 随拆卡一并移除：
+         拆出的两张卡只有 194px 宽，放不下 76px 圆环。
+         buildRing 收到 null 会返回空函数，这里保留 drawRI 只是为了不动 updateKPI
+         里那套「两只环一起补间」的流程，实际调用是空操作。 */
       const drawRI = buildRing($("rInit"), KPI.initPct, "#e8c25f");
       /* 时间进度卡：大字位显示「第 X 天」，下一行小字「共 31 天」（2026-10-14 需求）
          2026-10-15：第/天用小字号、天数数字用大字号并加强发光，突出数字本身。 */
       const daysHTML = (n) =>
         `<i class="kd-t">第</i><b class="kd-n">${Math.round(n)}</b><i class="kd-t">天</i>`;
       setTxt("vDaysTotal", `共 ${D} 天`);
-      setTxt("subInit", `基础 ${fmtI(totalInitBase)} 人 · 客单 ${fmtY(KPI.avgTicket)} 元`);
+      /* 累计初诊卡：2026-10-16 起小字行只留「基础 X 人」，
+         「客单 xxx 元」搬去独立的「平均单体」卡（见下面的 vAvgTicket）。 */
+      setTxt("subInit", `基础 ${fmtI(totalInitBase)} 人`);
+      /* 平均单体（2026-10-16 新增卡）= 六个店业绩之和 ÷ 六个店初诊之和 = KPI.avgTicket（元），
+         与「累计初诊」完全同源（data.js 汇总）。 */
+      setTxt("vAvgTicket", fmtY(KPI.avgTicket));
 
       /* ── 顶部 chip：两种口径
          channel：X人 · 目标 Y人 ／ 今日 N · 完成率 R%（条形 = 完成率）
@@ -1002,8 +1011,8 @@
         setN("vInit", m.totalInit, fmtI);
         setN("vTodayInit", m.kpi.todayInit, fmtI);
         setN("vTodayRev", m.kpi.todayRev, fmt2);
-        $("subInit").textContent =
-          `基础 ${fmtI(m.totalInitBase)} 人 · 客单 ${fmtY(m.kpi.avgTicket)} 元`;
+        setN("vAvgTicket", m.kpi.avgTicket, fmtY); // 平均单体（2026-10-16 新增卡）
+        $("subInit").textContent = `基础 ${fmtI(m.totalInitBase)} 人`;
         const to = {
           time: m.kpi.timePct,
           init: m.kpi.initPct,

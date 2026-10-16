@@ -415,13 +415,16 @@
         color: var(--text-dim);
         padding: 12px 0;
       }
-      /* 5 卡布局（2026-10-14 需求）：时间进度+今日数据 平分左栏 480 上方（各 228），
+      /* 6 卡布局（2026-10-16 需求）：时间进度+今日数据 平分左栏 480 上方（各 228），
          市场卡固定 480 与下方「健康顾问业绩」面板(1408..1888)严格对齐；
-         累计初诊/网电 flex 等宽平分剩余（(1856-4×24-228×2-480)/2 = 412）。
-         228+228+412×2+480 + 4×24(卡间距) = 1856 = .kpis 宽度，行内仍是通栏闭合。 */
+         原「累计初诊」卡（412）平均拆成两张 —— 累计初诊 + 平均单体，各 (412-24)/2 = 194；
+         网电卡吃满剩余，仍是 412，与拆之前位置一致。
+         228+228+194×2+412+480 + 5×24(卡间距) = 1856 = .kpis 宽度，行内仍是通栏闭合。 */
       .kpi.kpi-w1 { width: 228px; padding: 0 6px 0 12px; } /* 右内边距收窄：圆环右移一点 */
       .kpi.kpi-w1b { width: 228px; padding: 0 12px; }
+      /* 拆分出来的两张窄卡（194px）：放不下 76px 圆环，所以都是「标签 + 大数字 + 小字」纯文字版式 */
       .kpi.kpi-w2,
+      .kpi.kpi-w2b { flex: none; width: 194px; }
       .kpi.kpi-w3 { flex: 1 1 0; width: auto; min-width: 0; }
       .kpi.kpi-w4 { flex: none; width: 480px; }
       /* ── KPI 行「标题落位」统一（2026-10-15）──
@@ -440,15 +443,17 @@
         padding-top: 8px;
       }
       /* 时间进度：「第 X 天」混合字号（2026-10-15）
-         —— 「第」「天」缩到 24px、天数数字放大到 40px 并加强外发光，数字更亮眼；
-            数字行盒 42px + margin-top 4px，「共 31 天」行高收 14px，
-            合计 18+4+42+14 = 78，卡内 8→86，底部仍留 2px 不溢出。 */
+         —— 「第」「天」缩到 24px、天数数字放大到 40px 并加强外发光，数字更亮眼。
+         2026-10-16：内容块整体上移 4px（val 的 margin-top 4→0）。
+         卡的 88px 高、内容盒 86px，原排版 8+18+4+42+14 = 86 正好顶到下边框，
+         「共 31 天」的字形下沿贴着边框看起来像被切掉。上移后 8+18+0+42+14 = 82，
+         底部留 4px 余量；标题行仍从 8px 起排，与「今日数据 / 累计初诊」保持同一基线。 */
       .kpi.kpi-w1 .kpi-days { letter-spacing: 0; line-height: 42px; }
       .kpi.kpi-w1 .kpi-val {
         justify-content: center;
         height: 42px;
         line-height: 42px;
-        margin-top: 4px;
+        margin-top: 0;
       }
       .kpi.kpi-w1 .kpi-sub { text-align: center; margin-top: 0; line-height: 14px; }
       /* 「第」「天」：小字号，与数字同基线 */
@@ -474,12 +479,19 @@
       .kpi.kpi-w1b .td-num { font-size: 38px; line-height: 40px; }
       .kpi.kpi-w1b .today-duo { height: auto; }
       .kpi.kpi-w1b .td-cap { line-height: 18px; }
-      .kpi.kpi-w2 .kpi-val { line-height: 40px; height: 40px; }
-      .kpi.kpi-w2 .kpi-val .num { font-size: 38px; line-height: 40px; }
-      /* 市场卡（3 枚 chip）：缩内边距/间距/数字字号，chip 超宽走省略号 */
+      /* 累计初诊 / 平均单体（拆出来的两张 194px 卡）：大数字与「今日数据」同号 38px。
+         ⚠ w2b 必须一起写进选择器 —— 否则会退回基础规则的 44px，两张卡数字不一样大。 */
+      .kpi.kpi-w2 .kpi-val,
+      .kpi.kpi-w2b .kpi-val { line-height: 40px; height: 40px; }
+      .kpi.kpi-w2 .kpi-val .num,
+      .kpi.kpi-w2b .kpi-val .num { font-size: 38px; line-height: 40px; }
+      /* 市场卡（3 枚 chip）：缩内边距/间距/数字字号，chip 超宽走省略号。
+         2026-10-16：字号收紧只针对**小组** chip —— 「市场」是渠道 chip，
+         要和另一张卡的渠道 chip（网电 / 老带新）完全一致，用基础规则的 18px；
+         市场一组 / 市场二组 保持紧凑的 16px 不动。 */
       .kpi.kpi-w4 { padding: 0 12px; }
       .kpi.kpi-w4 .kpi-ch { gap: 8px; }
-      .kpi.kpi-w4 .chip-val b { font-size: 16px; }
+      .kpi.kpi-w4 .chip-group .chip-val b { font-size: 16px; }
       /* 渠道卡（网电/老带新/市场/一二组）行距（2026-10-15）：
          chip 内容原为 18+22+4+18 = 62px，卡内 8→70，下方空 18px 显得头重脚轻。
          给三个子行各加 4px 上间距 → 74px（8→82），下方空 6px；
@@ -540,9 +552,11 @@
         display: flex;
         flex-direction: column;
       }
-      /* 今日数据两列不等宽（2026-10-14 需求）：人数窄、业绩宽 */
+      /* 今日数据两列不等宽（2026-10-14 需求）：人数窄、业绩宽。
+         2026-10-16：中间的竖线 .td-sep 已删除，两列变成第 1 / 第 2 个子元素，
+         所以选择器从 (1)/(3) 改成 (1)/(2)，比例 0.8 : 1.2 不变。 */
       .today-duo .td-item:nth-child(1) { flex: 0.8; }
-      .today-duo .td-item:nth-child(3) { flex: 1.2; }
+      .today-duo .td-item:nth-child(2) { flex: 1.2; }
       .td-line {
         display: flex;
         align-items: baseline;
@@ -566,12 +580,8 @@
         line-height: 14px;
         white-space: nowrap;
       }
-      .td-sep {
-        flex: none;
-        width: 1px;
-        height: 34px;
-        background: rgba(212, 175, 55, 0.25);
-      }
+      /* .td-sep（今日初诊 / 今日业绩 之间的竖线）已于 2026-10-16 按需求删除：
+         元素从 index.html 移除、这里的分隔线样式一并删掉，不再需要分割。 */
       .kpi-sub {
         font-size: var(--t5);
         color: var(--text-dim);
