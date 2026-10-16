@@ -635,7 +635,7 @@
               <div class="sp-l1">
                 <span class="dot" style="background:${s.color}"></span>
                 <span class="sp-name">${s.name}</span>
-                <span class="sp-meta">实收 ${fmtW(s.actual)} / 基础 ${fmtW(s.targetBase)}</span>
+                <span class="sp-meta">实收 ${fmtW(s.actual)} / 目标 ${fmtW(s.targetBase)}</span>
               </div>
               <div class="sp-bar-wrap">
                 <span class="sp-bar"><i data-w="${clamp(s.revPct, 0, 100).toFixed(1)}"></i></span>
@@ -652,7 +652,7 @@
         m.stores.forEach((s, i) => {
           const row = rows[i];
           row.querySelector(".sp-meta").textContent =
-            `实收 ${fmtW(s.actual)} / 基础 ${fmtW(s.targetBase)}`;
+            `实收 ${fmtW(s.actual)} / 目标 ${fmtW(s.targetBase)}`;
           row.querySelector(".sp-bar i").style.width =
             clamp(s.revPct, 0, 100).toFixed(1) + "%";
           const pctEl = row.querySelector(".sp-pct");
