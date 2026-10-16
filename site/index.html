@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261016-1" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261016-2" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -154,8 +154,9 @@
             </div>
           </div>
         </div>
-        <!-- 累计初诊 / 平均单体：2026-10-16 由原「累计初诊」单卡（412px）平均拆成两张 194px 卡。
-             194px 放不下 76px 圆环，所以两张卡都是「标签 + 大数字 + 小字」纯文字版式。 -->
+        <!-- 累计初诊 / 平均单体：2026-10-16 由原「累计初诊」单卡（412px）拆成两张。
+             同日再加回初诊完成率圆环（#rInit）——卡宽 194 → 252 容纳 76px 圆环，
+             多出的宽度从卡间距（24 → 16）里挤，左右两个红框区宽度不变。 -->
         <div class="kpi kpi-w2 rv" data-page-node-id="KUwDDoYRsBBzJocgN3xbk4">
           <div class="kpi-l" data-page-node-id="MGHXHej9tQ5Hyuykaf9URP">
             <div class="kpi-label" data-page-node-id="w1z18vkmG5Nbth9sIqBwyG">累计初诊</div>
@@ -164,6 +165,7 @@
             </div>
             <div class="kpi-sub" id="subInit" data-page-node-id="tzTCCbZm5sNMX1L8b9eey3">基础 — 人</div>
           </div>
+          <svg class="kpi-ring" id="rInit" viewBox="0 0 76 76" data-page-node-id="oSgAc6CB6fNtqqdUA3VIWz"></svg>
         </div>
         <div class="kpi kpi-w2b rv">
           <div class="kpi-l">
@@ -482,7 +484,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261016-1"></script>
-    <script type="module" src="app/js/main.js?v=20261016-1"></script>
+        <script src="app/js/data.js?v=20261016-2"></script>
+    <script type="module" src="app/js/main.js?v=20261016-2"></script>
   </body>
 </html>
