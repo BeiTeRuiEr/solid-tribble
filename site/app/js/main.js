@@ -117,7 +117,6 @@
          元素缺失时抛错，把整个 module 渲染打断成白屏（历史上踩过一次）。 */
       setTxt("heroTitle", `${campMonth} · 门店业绩达成`);
       $("trendTag").textContent = `${dayFull(0)} – ${dayFull(D - 1)} · 万元`;
-      const sumOf = (arr, fn) => arr.reduce((a, x) => a + fn(x), 0);
       const totalBase = DATA.totals.totalBase;
       const totalRev = DATA.totals.totalRev;
       const totalInitBase = DATA.totals.totalInitBase;
@@ -668,9 +667,13 @@
         });
       }
 
-      /* setW=true：心跳重建后直接落位（入场时交给 entrance 统一铺开） */
+      /* setW=true：心跳重建后直接落位（入场时交给 entrance 统一铺开）
+         2026-10-16 需求：门店顺序不再按初诊完成率降序，改为与上方「业绩进度」
+         面板完全一致的 MODEL.stores 原始顺序（神华/九星/青东/包百/校园/医院），
+         两栏逐行一一对应，便于左右对照。
+         ⚠ 别再在这里 sort —— 排序会让两栏行号错位。 */
       function renderRevisitRows(m, setW) {
-        const list = [...m.stores].sort((a, b) => b.initPct - a.initPct);
+        const list = m.stores;
         $("rowsRevisit").innerHTML = list
           .map((s) => {
             const done = fmtI(initActualOf(s)),
@@ -679,7 +682,7 @@
               <div class="sp-l1">
                 <span class="dot" style="background:${s.color}"></span>
                 <span class="sp-name">${s.name}</span>
-                <span class="sp-meta">初诊 ${done} 人 / 目标 ${goal} 人</span>
+                <span class="sp-meta">初诊 ${done} / 目标 ${goal}</span>
               </div>
               <div class="sp-bar-wrap">
                 <span class="sp-bar"><i data-w="${clamp(s.initPct, 0, 100).toFixed(1)}"></i></span>
@@ -692,8 +695,6 @@
           $("rowsRevisit")
             .querySelectorAll("i[data-w]")
             .forEach((el) => (el.style.width = el.dataset.w + "%"));
-        $("tagRevisit").textContent =
-          `均值 ${(sumOf(m.stores, (s) => s.initPct) / m.stores.length).toFixed(2)}% · 按率降序`;
       }
       renderRevisitRows(MODEL, false);
 
