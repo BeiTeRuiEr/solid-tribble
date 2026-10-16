@@ -209,19 +209,21 @@
 
       /* ── 顶部 chip：两种口径
          channel：X人 · 目标 Y人 ／ 今日 N · 完成率 R%（条形 = 完成率）
-         group  ：X人 · 总业绩 Y万 ／ 今日 N · 今日业绩 Z（条形 = 占两组合计业绩比例） */
+         group  ：X人 · 总业绩 Y万 ／ 今日 N（条形恒为 0%，见下） */
       const chipLine1 = (c) =>
         c.kind === "group"
           ? `<b>${fmtI(c.cum)}</b>人 · <b>${fmtW(c.total)}</b>万`
           : `<b>${fmtI(c.cum)}</b>人 · 目标 <b>${fmtI(c.target)}</b>人`;
+      /* 小组 chip 的小字行（2026-10-16 需求）：去掉「今日业绩 xxx 元/万」，只留「今日 N」。
+         渠道 chip 保持「今日 N · 完成率 R%」不变。 */
       const chipLine2 = (c) =>
         c.kind === "group"
-          ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · ${fmtMoney(c.revToday)}`
+          ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b>`
           : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(2)}%`;
-      /* 小组 chip 的条不再表示百分比（2026-10-14 需求）：恒为通长黄线做分隔；
-         渠道 chip 仍按完成率填充。 */
+      /* 小组 chip 的条（2026-10-16 需求）：黄线填充改为 0%（原先恒为 100% 通长黄线）；
+         渠道 chip 仍按完成率填充。小组本身没有可比的完成率口径，黄线会误导。 */
       const chipBarW = (c) =>
-        c.kind === "group" ? 100 : Math.round(clamp(c.rate, 0, 100));
+        c.kind === "group" ? 0 : Math.round(clamp(c.rate, 0, 100));
       const chipHTML = (c) => `<div class="chip chip-${c.kind}">
             <div class="chip-name"><span class="dot" style="background:${c.color}"></span>${c.name}</div>
             <div class="chip-val">${chipLine1(c)}</div>
