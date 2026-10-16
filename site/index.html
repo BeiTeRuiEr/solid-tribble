@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261016-2" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261016-3" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -154,9 +154,10 @@
             </div>
           </div>
         </div>
-        <!-- 累计初诊 / 平均单体：2026-10-16 由原「累计初诊」单卡（412px）拆成两张。
-             同日再加回初诊完成率圆环（#rInit）——卡宽 194 → 252 容纳 76px 圆环，
-             多出的宽度从卡间距（24 → 16）里挤，左右两个红框区宽度不变。 -->
+        <!-- 累计初诊 / 平均单体：2026-10-16 由原「累计初诊」单卡（412px）拆成两张，
+             同日加回初诊完成率圆环（#rInit），并把两张卡定成等宽 236px。
+             236 是「累计初诊」的下限（要塞 76px 圆环）；多出的宽度从卡间距
+             （24 → 16，6 张卡 5 条间距统一）里挤，左右两个红框区宽度不变。 -->
         <div class="kpi kpi-w2 rv" data-page-node-id="KUwDDoYRsBBzJocgN3xbk4">
           <div class="kpi-l" data-page-node-id="MGHXHej9tQ5Hyuykaf9URP">
             <div class="kpi-label" data-page-node-id="w1z18vkmG5Nbth9sIqBwyG">累计初诊</div>
@@ -484,7 +485,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261016-2"></script>
-    <script type="module" src="app/js/main.js?v=20261016-2"></script>
+        <script src="app/js/data.js?v=20261016-3"></script>
+    <script type="module" src="app/js/main.js?v=20261016-3"></script>
   </body>
 </html>
