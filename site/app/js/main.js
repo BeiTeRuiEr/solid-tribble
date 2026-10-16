@@ -6,7 +6,6 @@
        * ══════════════════════════════════════════════════════════ */
       const DATA = await loadDashboardData();
       const CAMPAIGN = DATA.campaign;
-      const SPRINT_K = DATA.sprintK;
       const STORES = DATA.stores;
       const CHANNELS = DATA.channels;
       const STAFF = DATA.staff;
@@ -123,7 +122,9 @@
       const totalRev = DATA.totals.totalRev;
       const totalInitBase = DATA.totals.totalInitBase;
       const totalInit = DATA.totals.totalInit;
-      const sprintOf = (base) => base * SPRINT_K;
+      /* SPRINT_K / sprintOf（冲刺目标 = 基础 × 1.18）已于 2026-10-16 停用：
+         「业绩进度」面板的条形改为直接表示完成率，页面不再有冲刺目标口径。
+         系数仍保留在 data.js 的 CONFIG.sprintK，需要时可恢复。 */
       const actualOf = (s) => s.actual;
       const initActualOf = (s) => s.initActual;
       const dailyByStore = DATA.daily.byId;
@@ -621,22 +622,27 @@
        *      BI 没有这个指标；现在换成 BI 原生的初诊三件套，不再依赖手填值。）
        * ══════════════════════════════════════════════════════════ */
       function renderRevRows(m) {
+        /* 2026-10-16 需求：
+           ① 行内小字不再带「万」（面板头已写明「单位：万元」）；
+           ② 条形改为直接表示正常完成率（实收 ÷ 基础 = s.revPct），
+              并删掉白色的基础目标刻度 —— 原先条形是对「冲刺目标（基础×1.18）」画、
+              刻度恒停在 84.7%，与右侧的完成率百分比是两个口径，容易误读，已废弃。
+              副作用修正：基础为 0 的门店（如三级医院）原先 0÷0 被钳成满条，
+              现在按完成率 0.00% 显示为空条，与右侧百分比一致。 */
         $("rowsRev").innerHTML = m.stores
-          .map((s) => {
-            const actual = s.actual,
-              sprint = sprintOf(s.targetBase);
-            return `<div class="sp-row">
+          .map(
+            (s) => `<div class="sp-row">
               <div class="sp-l1">
                 <span class="dot" style="background:${s.color}"></span>
                 <span class="sp-name">${s.name}</span>
-                <span class="sp-meta">实收 ${fmtW(actual)} / 基础 ${fmtW(s.targetBase)} 万</span>
+                <span class="sp-meta">实收 ${fmtW(s.actual)} / 基础 ${fmtW(s.targetBase)}</span>
               </div>
               <div class="sp-bar-wrap">
-                <span class="sp-bar"><i data-w="${clamp((actual / sprint) * 100, 0, 100).toFixed(1)}"></i><span class="tick"></span></span>
+                <span class="sp-bar"><i data-w="${clamp(s.revPct, 0, 100).toFixed(1)}"></i></span>
               </div>
               <span class="sp-pct">${s.revPct.toFixed(2)}%</span>
-            </div>`;
-          })
+            </div>`,
+          )
           .join("");
       }
       renderRevRows(MODEL);
@@ -646,11 +652,9 @@
         m.stores.forEach((s, i) => {
           const row = rows[i];
           row.querySelector(".sp-meta").textContent =
-            `实收 ${fmtW(s.actual)} / 基础 ${fmtW(s.targetBase)} 万`;
+            `实收 ${fmtW(s.actual)} / 基础 ${fmtW(s.targetBase)}`;
           row.querySelector(".sp-bar i").style.width =
-            clamp((s.actual / sprintOf(s.targetBase)) * 100, 0, 100).toFixed(
-              1,
-            ) + "%";
+            clamp(s.revPct, 0, 100).toFixed(1) + "%";
           const pctEl = row.querySelector(".sp-pct");
           if (animate)
             tweenNum(

@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261016-4" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261016-5" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -194,9 +194,11 @@
         style="left: 32px; top: 192px; width: 480px; height: 300px" data-page-node-id="0GzqxweOMjRgrN7YKevPSM"
       >
         <div class="panel-hd" data-page-node-id="Df7qdn8ugzR1t7VkyfmpOt">
-          <h3 data-page-node-id="QozZiLu8bZZRKTjCXXU3ck">门店实收达成</h3>
+          <h3 data-page-node-id="QozZiLu8bZZRKTjCXXU3ck">业绩进度</h3>
           <span class="hline" data-page-node-id="J2i0PtmHDQrnvhUNHukCvz"></span>
-          <span class="tag" data-page-node-id="NDKkVHRwoWOS1iuBsFXWVc">单位：万元 · 条形对冲刺目标</span>
+          <!-- 2026-10-16：删掉「· 条形对冲刺目标」（条形不再对冲刺目标，改为直接对基础目标），
+               只留「单位：万元」；.panel-hd 是 flex，.hline flex:1 会把 .tag 顶到面板最右侧。 -->
+          <span class="tag" data-page-node-id="NDKkVHRwoWOS1iuBsFXWVc">单位：万元</span>
         </div>
         <div class="sp-rows" id="rowsRev" data-page-node-id="oeGaWgf1RTmptFVPS90v6Z"></div>
       </section>
@@ -485,7 +487,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261016-4"></script>
-    <script type="module" src="app/js/main.js?v=20261016-4"></script>
+        <script src="app/js/data.js?v=20261016-5"></script>
+    <script type="module" src="app/js/main.js?v=20261016-5"></script>
   </body>
 </html>
