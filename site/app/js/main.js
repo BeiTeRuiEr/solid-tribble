@@ -807,7 +807,23 @@
         PLOT_H = TH - PAD_T - PAD_B; // 128
       const trendSvg = $("trendSvg");
       trendSvg.setAttribute("viewBox", `0 0 ${TW} ${TH}`);
-      const xAt = (i) => PAD_L + (i * PLOT_W) / (D - 1);
+      /* X 轴长度跟随 BI 实际数据（2026-10-18 需求）：原来横轴固定画满整月 31 天，
+         BI 只到 18 号时，前 18 天被压在全宽 58% 里、右边一大截空白。
+         现在取「最后一个有数据的日期」为终点 —— BI 多一天，轴就多一格。 */
+      const lastDataIdx = (arr) => {
+        for (let i = arr.length - 1; i >= 0; i--) if (arr[i] > 0) return i;
+        return -1;
+      };
+      /* 以「所有系列里最后一个有数据的日期」为终点（SERIES 在下面才建，故延后赋值） */
+      const dataDays = () => {
+        let last = -1;
+        Object.values(SERIES).forEach((se) => {
+          last = Math.max(last, lastDataIdx(se.data));
+        });
+        return clamp(last + 1, 2, D); // 至少 2 个点才画得成线
+      };
+      let NDAY = 2; // 折线实际跨度（天数），SERIES 建好后按真实数据重算
+      const xAt = (i) => PAD_L + (i * PLOT_W) / (NDAY - 1);
       /* 纵轴量程（2026-10-18 需求）：每个系列按自身数据自动定标 —— 选中某门店时
          纵轴跟着该店的业绩缩放，不再沿用「全部门店」的固定量程（那样单店曲线会贴底）。
          刻度固定 4 等分，步长取 1/1.5/2/2.5/3/4/5/6/8/10 ×10^k，保证标签是整数。
@@ -837,12 +853,13 @@
           html += `<line class="grid-ln" x1="${PAD_L}" y1="${y}" x2="${TW - PAD_R}" y2="${y}" />`;
           html += `<text class="axis-txt" x="${PAD_L - 8}" y="${+y + 5}" text-anchor="end">${fmtTick(val)}</text>`;
         }
-        /* 刻度按活动日下标取（第 1/5/10/15/20/25/30 天），文字用真实日期 M/D */
-        [0, 4, 9, 14, 19, 24, 29]
-          .filter((i) => i < D)
-          .forEach((i) => {
-            html += `<text class="axis-txt" x="${xAt(i).toFixed(1)}" y="${TH - 6}" text-anchor="middle">${dayLabel(i)}</text>`;
-          });
+        /* X 刻度：每 5 天一格（第 1/5/10/15… 天），只画到数据末尾；
+           末尾那天与上一格相距 ≥2 天时补一个标签，让「最后一天」始终能看到 */
+        const xt = [0, 4, 9, 14, 19, 24, 29].filter((i) => i < NDAY);
+        if (NDAY - 1 - xt[xt.length - 1] >= 2) xt.push(NDAY - 1);
+        xt.forEach((i) => {
+          html += `<text class="axis-txt" x="${xAt(i).toFixed(1)}" y="${TH - 6}" text-anchor="middle">${dayLabel(i)}</text>`;
+        });
         /* 单位「万」放在绘图区左上角（原来是和顶部刻度挤在同一格互相重叠；
            顶部 tag「· 万元」2026-10-18 已按需求删掉，这个单位标更不能丢） */
         html += `<text class="axis-txt" x="6" y="${PAD_T + 5}" text-anchor="start">万</text>`;
@@ -869,6 +886,7 @@
         );
       };
       Object.values(SERIES).forEach(rescaleSeries);
+      NDAY = dataDays(); // BI 数据到第几天，横轴就画几天
       drawGrid(SERIES.all.sc);
 
       const lineEl = $("lgLine"),
@@ -878,13 +896,16 @@
       let curKey = "all";
       let dispY = SERIES[curKey].y.slice(); // 折线当前显示的 y（用于插值起点）
       function pathsOf(y) {
-        const pts = y.map((yy, i) => `${xAt(i).toFixed(1)},${yy.toFixed(1)}`);
+        /* 只画到 NDAY（有数据的最后一天），避免末尾的补 0 点越出绘图区右边界 */
+        const pts = y
+          .slice(0, NDAY)
+          .map((yy, i) => `${xAt(i).toFixed(1)},${yy.toFixed(1)}`);
         const dLine = "M " + pts.join(" L ");
         const base = (PAD_T + PLOT_H).toFixed(1);
         return {
           dLine,
           dArea:
-            dLine + ` L ${xAt(T - 1).toFixed(1)},${base} L ${PAD_L},${base} Z`,
+            dLine + ` L ${xAt(NDAY - 1).toFixed(1)},${base} L ${PAD_L},${base} Z`,
         };
       }
       function paint(key, yOverride, colorOverride) {
@@ -896,11 +917,11 @@
         areaEl.setAttribute("d", dArea);
         lineEl.setAttribute("stroke", color);
         $("tAreaA").setAttribute("stop-color", color);
-        pulseEl.setAttribute("cx", xAt(T - 1));
-        pulseEl.setAttribute("cy", y[T - 1]);
+        pulseEl.setAttribute("cx", xAt(NDAY - 1));
+        pulseEl.setAttribute("cy", y[NDAY - 1]);
         pulseEl.setAttribute("stroke", color);
-        endDotEl.setAttribute("cx", xAt(T - 1));
-        endDotEl.setAttribute("cy", y[T - 1]);
+        endDotEl.setAttribute("cx", xAt(NDAY - 1));
+        endDotEl.setAttribute("cy", y[NDAY - 1]);
       }
       function mixColor(h0, h1, t) {
         const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -986,9 +1007,9 @@
           const r = trendSvg.getBoundingClientRect();
           const mx = (e.clientX - r.left) / SCALE;
           const i = clamp(
-            Math.round((mx - PAD_L) / (PLOT_W / (D - 1))),
+            Math.round((mx - PAD_L) / (PLOT_W / (NDAY - 1))),
             0,
-            T - 1,
+            NDAY - 1,
           );
           const se = SERIES[curKey],
             x = xAt(i),
@@ -1004,7 +1025,7 @@
           tip.style.display = "block";
           tip.innerHTML = `${dayFull(i)} · <b>${se.data[i].toFixed(2)}</b> 万<br>累计 <b>${se.cum[i].toFixed(2)}</b> 万 · ${se.name}`;
           const tw = tip.offsetWidth / SCALE;
-          tip.style.left = x + (i > (D * 2) / 3 ? -tw - 16 : 16) + "px";
+          tip.style.left = x + (i > (NDAY * 2) / 3 ? -tw - 16 : 16) + "px";
           tip.style.top = clamp(y - 30, 4, TH - 60) + "px";
         });
         trendSvg.addEventListener("mouseleave", () => {
@@ -1167,6 +1188,8 @@
       function updateTrend(m, animate) {
         SERIES.all.data = m.daily.all;
         m.stores.forEach((s) => (SERIES[s.id].data = m.daily.byId[s.id]));
+        /* 横轴跨度跟着 BI 的数据走：BI 多了新的一天，轴自动延长一格 */
+        NDAY = dataDays();
         /* 每个系列按自己新的数据重新定标（选门店时纵轴同样跟着走） */
         Object.values(SERIES).forEach(rescaleSeries);
         drawGrid(SERIES[curKey].sc);

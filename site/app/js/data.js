@@ -386,8 +386,11 @@
       for (let i = 0; i < T; i++) arr.push(m[i] || 0);
       /* 今日点（下标 T-1）用门店表实时「今日业绩」覆盖：
          daily.json 已改为每天凌晨抓一次，白天它的今日格不刷新。
-         找不到该列时 s.todayRev 为 null → 保持 daily 原值，不写 0。 */
-      if (s.todayRev != null) arr[T - 1] = s.todayRev;
+         找不到该列时 s.todayRev 为 null → 保持 daily 原值，不写 0。
+         2026-10-18 修正：BI 门店表「今日业绩」经常整列为 0（当天还没结算/未刷新），
+         直接覆盖会把 daily 里已经存在的今日实收抹成 0，曲线末尾凭空掉到 0。
+         改为取两者较大值 —— 只有实时列确实更大（更及时）时才覆盖。 */
+      if (s.todayRev != null && s.todayRev > arr[T - 1]) arr[T - 1] = s.todayRev;
       byId[s.id] = arr;
       for (let i = 0; i < T; i++) all[i] += arr[i];
     });
