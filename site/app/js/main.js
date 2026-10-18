@@ -138,7 +138,8 @@
          这里必须走判空安全的 setTxt —— 直接 $("heroTitle").textContent 会在
          元素缺失时抛错，把整个 module 渲染打断成白屏（历史上踩过一次）。 */
       setTxt("heroTitle", `${campMonth} · 门店业绩达成`);
-      $("trendTag").textContent = `${dayFull(0)} – ${dayFull(D - 1)} · 万元`;
+      /* 底部折线面板头的「X月1日 – X月31日 · 万元」tag 已于 2026-10-18 按需求删除，
+         这里不再写它（元素已移除，硬写会抛错打断整个渲染）。 */
       const totalBase = DATA.totals.totalBase;
       const totalRev = DATA.totals.totalRev;
       const totalInitBase = DATA.totals.totalInitBase;
@@ -804,28 +805,46 @@
       const trendSvg = $("trendSvg");
       trendSvg.setAttribute("viewBox", `0 0 ${TW} ${TH}`);
       const xAt = (i) => PAD_L + (i * PLOT_W) / (D - 1);
-      /* 纵轴量程：留 15% 余量并向上取 5 的倍数；下限 5 万 —— 活动刚开月、
-         daily 还没抓到数据时窗口内全为 0，除以 0 会让整条曲线变成 NaN */
-      let MAXV = Math.max(5, Math.ceil((Math.max(...dailyAll) * 1.15) / 5) * 5); // 心跳后可能重算升档
-      const yAt = (v) => PAD_T + (1 - v / MAXV) * PLOT_H;
+      /* 纵轴量程（2026-10-18 需求）：每个系列按自身数据自动定标 —— 选中某门店时
+         纵轴跟着该店的业绩缩放，不再沿用「全部门店」的固定量程（那样单店曲线会贴底）。
+         刻度固定 4 等分，步长取 1/1.5/2/2.5/3/4/5/6/8/10 ×10^k，保证标签是整数。
+         daily 全 0（活动刚开月、还没抓到数据）时兜底 0~4，避免除以 0 变 NaN。 */
+      const niceScale = (arr) => {
+        const peak = Math.max(0, ...arr.filter((v) => Number.isFinite(v)));
+        if (!(peak > 0)) return { max: 4, step: 1 };
+        const target = peak * 1.15; // 顶部留 15% 余量
+        const mag = Math.pow(10, Math.floor(Math.log10(target / 4)));
+        for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) {
+          const step = m * mag;
+          if (step * 4 >= target - 1e-9) return { max: +(step * 4).toFixed(6), step };
+        }
+        return { max: 40 * mag, step: 10 * mag };
+      };
+      const fmtTick = (v) => {
+        const r = Math.round(v * 100) / 100;
+        return Number.isInteger(r) ? String(r) : String(+r.toFixed(1));
+      };
+      const yAt = (v, max) => PAD_T + (1 - v / max) * PLOT_H;
 
-      function drawGrid() {
+      function drawGrid(sc) {
         let html = "";
-        [0.25, 0.5, 0.75, 1].forEach((k) => {
-          const y = yAt(MAXV * k).toFixed(1);
+        for (let i = 1; i <= 4; i++) {
+          const val = sc.step * i;
+          const y = yAt(val, sc.max).toFixed(1);
           html += `<line class="grid-ln" x1="${PAD_L}" y1="${y}" x2="${TW - PAD_R}" y2="${y}" />`;
-          html += `<text class="axis-txt" x="${PAD_L - 8}" y="${+y + 5}" text-anchor="end">${Math.round(MAXV * k)}</text>`;
-        });
+          html += `<text class="axis-txt" x="${PAD_L - 8}" y="${+y + 5}" text-anchor="end">${fmtTick(val)}</text>`;
+        }
         /* 刻度按活动日下标取（第 1/5/10/15/20/25/30 天），文字用真实日期 M/D */
         [0, 4, 9, 14, 19, 24, 29]
           .filter((i) => i < D)
           .forEach((i) => {
             html += `<text class="axis-txt" x="${xAt(i).toFixed(1)}" y="${TH - 6}" text-anchor="middle">${dayLabel(i)}</text>`;
           });
-        html += `<text class="axis-txt" x="${PAD_L - 8}" y="${yAt(MAXV) + 5}" text-anchor="end">万</text>`;
+        /* 单位「万」放在绘图区左上角（原来是和顶部刻度挤在同一格互相重叠；
+           顶部 tag「· 万元」2026-10-18 已按需求删掉，这个单位标更不能丢） */
+        html += `<text class="axis-txt" x="6" y="${PAD_T + 5}" text-anchor="start">万</text>`;
         $("tGrid").innerHTML = html;
       }
-      drawGrid();
 
       const SERIES = {
         all: { name: "全部门店", color: "#f0cf7a", data: dailyAll },
@@ -838,19 +857,23 @@
             data: dailyByStore[s.id],
           }),
       );
-      Object.values(SERIES).forEach((se) => {
-        se.y = se.data.map((v) => yAt(v));
+      const rescaleSeries = (se) => {
+        se.sc = niceScale(se.data);
+        se.y = se.data.map((v) => yAt(v, se.sc.max));
         se.cum = se.data.reduce(
           (acc, v) => (acc.push((acc[acc.length - 1] || 0) + v), acc),
           [],
         );
-      });
+      };
+      Object.values(SERIES).forEach(rescaleSeries);
+      drawGrid(SERIES.all.sc);
 
       const lineEl = $("lgLine"),
         areaEl = $("lgArea"),
         pulseEl = $("lgPulse"),
         endDotEl = $("lgEndDot");
       let curKey = "all";
+      let dispY = SERIES[curKey].y.slice(); // 折线当前显示的 y（用于插值起点）
       function pathsOf(y) {
         const pts = y.map((yy, i) => `${xAt(i).toFixed(1)},${yy.toFixed(1)}`);
         const dLine = "M " + pts.join(" L ");
@@ -884,30 +907,41 @@
       }
       paint(curKey);
 
-      function switchSeries(key) {
-        if (key === curKey || !SERIES[key]) return;
-        const fromY = SERIES[curKey].y.slice(),
-          fromC = SERIES[curKey].color;
-        const toY = SERIES[key].y,
-          toC = SERIES[key].color;
-        curKey = key;
-        $("selLabel").textContent = SERIES[key].name;
-        $("lgName").textContent = SERIES[key].name;
-        document
-          .querySelectorAll("#selMenu li")
-          .forEach((li) => li.classList.toggle("cur", li.dataset.key === key));
-        const t0 = performance.now(),
-          DUR = 260;
+      /* 折线过渡：从 fromY（旧像素位置）动到 key 系列的目标位置。
+         用「归一化高度」插值 —— 这样即便换系列时纵轴量程变了，
+         起点仍精确落在旧曲线上，终点落在新量程上，不会跳。 */
+      function tweenPaint(key, fromY, fromC, dur) {
+        const to = SERIES[key];
+        const ratio = (y) => 1 - (y - PAD_T) / PLOT_H;
+        const fromR = fromY.map(ratio);
+        const yOf = (r) => PAD_T + (1 - r) * PLOT_H;
+        const t0 = performance.now();
         (function frame(now) {
-          const k = easeOut(clamp((now - t0) / DUR, 0, 1));
+          const k = clamp((now - t0) / dur, 0, 1),
+            e = easeOut(k);
           paint(
             key,
-            fromY.map((v, i) => lerp(v, toY[i], k)),
-            mixColor(fromC, toC, k),
+            to.y.map((ty, i) => yOf(lerp(fromR[i], ratio(ty), e))),
+            fromC === to.color ? fromC : mixColor(fromC, to.color, e),
           );
           if (k < 1) requestAnimationFrame(frame);
           else paint(key);
         })(t0);
+      }
+
+      function switchSeries(key) {
+        if (key === curKey || !SERIES[key]) return;
+        const fromY = SERIES[curKey].y.slice(),
+          fromC = SERIES[curKey].color;
+        curKey = key;
+        $("selLabel").textContent = SERIES[key].name;
+        document
+          .querySelectorAll("#selMenu li")
+          .forEach((li) => li.classList.toggle("cur", li.dataset.key === key));
+        /* 纵轴随所选系列重定标（关卡需求：选门店后按该店业绩缩放） */
+        drawGrid(SERIES[key].sc);
+        tweenPaint(key, fromY, fromC, 300);
+        dispY = SERIES[key].y.slice();
       }
 
       (function initSelect() {
@@ -1041,7 +1075,6 @@
        * ⑫ 数据心跳：每 5 分钟重新抓取 BI 数据并全量刷新（页面不重载）
        * ══════════════════════════════════════════════════════════ */
       const ENTRANCE_END = performance.now() + (ANIM ? 2600 : 0);
-      let dispY = SERIES[curKey].y.slice(); // 折线当前显示的 y（用于插值起点）
       let curArc = heroEntries(MODEL).map((s) => s.revPct); // 6 段弧当前完成率（按站位顺序）
       let heroCur = KPI.revPct; // 水球当前水位
       let ringCur = { time: KPI.timePct, init: KPI.initPct };
@@ -1127,39 +1160,20 @@
         heroBase = toBase;
       }
 
-      /* 底部折线：序列整体替换 + 260~700ms 插值；量程变档时重建网格 */
+      /* 底部折线：序列整体替换 + 300~700ms 插值；当前系列量程变档时重建网格 */
       function updateTrend(m, animate) {
-        const newMax = Math.max(5, Math.ceil((Math.max(...m.daily.all) * 1.15) / 5) * 5);
-        const rescaled = newMax !== MAXV;
-        MAXV = newMax;
         SERIES.all.data = m.daily.all;
         m.stores.forEach((s) => (SERIES[s.id].data = m.daily.byId[s.id]));
-        Object.values(SERIES).forEach((se) => {
-          se.y = se.data.map((v) => yAt(v));
-          se.cum = se.data.reduce(
-            (acc, v) => (acc.push((acc[acc.length - 1] || 0) + v), acc),
-            [],
-          );
-        });
-        if (rescaled) drawGrid();
-        const toY = SERIES[curKey].y,
-          fromY = dispY;
-        dispY = toY.slice();
+        /* 每个系列按自己新的数据重新定标（选门店时纵轴同样跟着走） */
+        Object.values(SERIES).forEach(rescaleSeries);
+        drawGrid(SERIES[curKey].sc);
+        const fromY = dispY;
+        dispY = SERIES[curKey].y.slice();
         if (!animate) {
           paint(curKey);
           return;
         }
-        const t0 = performance.now(),
-          DUR = 700;
-        (function f(now) {
-          const k = easeOut(clamp((now - t0) / DUR, 0, 1));
-          paint(
-            curKey,
-            fromY.map((v, i) => lerp(v, toY[i], k)),
-          );
-          if (k < 1) requestAnimationFrame(f);
-          else paint(curKey);
-        })(t0);
+        tweenPaint(curKey, fromY, SERIES[curKey].color, 700);
       }
 
       /* 一次心跳 = 全板原地刷新 */
