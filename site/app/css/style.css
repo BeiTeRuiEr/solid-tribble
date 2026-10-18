@@ -1309,13 +1309,16 @@
         background: var(--line-main);
       }
 
-      .foot-note {
+      /* 底部右下角：数据更新时间（2026-10-18 需求：从底部居中挪到原「数据来源」位置，
+         文案合成为「数据更新于 … · 每5分钟自动刷新」，原「数据来源」那行已删除） */
+      .foot-updated {
         position: absolute;
         right: var(--sp-4);
         bottom: 10px;
         font-size: var(--t5);
         letter-spacing: 2px;
-        color: rgba(243, 236, 225, 0.28);
+        color: rgba(243, 236, 225, 0.42);
+        white-space: nowrap;
       }
 
       /* ══════════ ⑩ 数据心跳指示器（左下角） ══════════ */
@@ -1388,14 +1391,4 @@
         }
       }
 
-      /* ══════════ 更新时间（数据来源时间戳，页面最底部中央） ══════════ */
-      .foot-updated {
-        position: absolute;
-        left: 50%;
-        bottom: 10px;
-        transform: translateX(-50%);
-        font-size: var(--t5);
-        letter-spacing: 2px;
-        color: rgba(243, 236, 225, 0.42);
-        white-space: nowrap;
-      }
+      /* ══════════ 更新时间（已挪到右下角，见 .foot-updated 的统一定义） ══════════ */

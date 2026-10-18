@@ -155,9 +155,12 @@
       const KPI = DATA.kpi;
       /* 当前生效的数据模型（首次 = 刚抓到的 JSON；5 分钟心跳后会整体替换） */
       let MODEL = DATA.model;
-      /* 底部更新时间 = BI 爬虫写入 JSON 的 updated_at（7 张表里最新的一个） */
+      /* 底部更新时间 = BI 爬虫写入 JSON 的 updated_at（7 张表里最新的一个）。
+         2026-10-18 需求：文案改为「数据更新于 … · 每5分钟自动刷新」，
+         位置从底部居中挪到原来「数据来源」所在的右下角。 */
       const setFoot = (t) =>
-        ($("footUpdated").textContent = "更新于 " + (t || "--") + " ·");
+        ($("footUpdated").textContent =
+          "数据更新于 " + (t || "--") + " · 每5分钟自动刷新");
       setFoot(DATA.updatedAt);
 
 /* ══════════════════════════════════════════════════════════
