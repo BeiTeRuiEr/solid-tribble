@@ -9,6 +9,28 @@
       const STORES = DATA.stores;
       const CHANNELS = DATA.channels;
       const STAFF = DATA.staff;
+      /* ── 水球六段站位的门店顺序（2026-10-18 需求）─────────────────────────
+         阅读顺序「从左到右、从上到下」= 医院 / 神华 / 九星 / 青东 / 包百 / 校园。
+         六段槽位固定为：右上 → 右中 → 右下 → 左上 → 左中 → 左下，因此映射成
+           神华(右上) 青东(右中) 校园(右下) | 医院(左上) 九星(左中) 包百(左下)。
+         ⚠ 只作用于中央 Hero 的弧段与左右框；左栏两栏列表仍走 MODEL.stores 原始
+           顺序（两栏逐行对齐是 10-16 的需求），所以不能改 CONFIG.order。
+         HERO 只提供"站位 → 门店名"，取数一律按名字回查当拍模型，避免心跳重建
+         后对象引用过期。 */
+      const HERO_ORDER = ["神华店", "青东店", "校园店", "三级医院", "九星店", "包百店"];
+      const HERO = (() => {
+        const out = HERO_ORDER.map((n) => STORES.find((s) => s.name === n)).filter(Boolean);
+        // 兜底：BI 改名/新增导致名字对不上时，未入列的门店补到末尾，不会整块消失
+        STORES.forEach((s) => {
+          if (!out.includes(s)) out.push(s);
+        });
+        return out;
+      })();
+      /* 站位 i 上的门店（按名字回查指定模型，取最新数值） */
+      const heroEntry = (i, m) =>
+        (m.stores.find((s) => s.name === HERO[i].name)) || HERO[i];
+      /* 按站位顺序排好的门店数组（弧段 / 左右框的数据源） */
+      const heroEntries = (m) => HERO.map((s, i) => heroEntry(i, m));
 
 /* ══════════════════════════════════════════════════════════
        * ② 工具（沿用「进度水球」的几何与缓动套路）
@@ -394,9 +416,9 @@
       syncUnit();
       addEventListener("resize", syncUnit);
 
-      SEGMENTS.slice(0, STORES.length).forEach((seg, i) => {
+      SEGMENTS.slice(0, HERO.length).forEach((seg, i) => {
         const t = trackRange(seg),
-          s = STORES[i];
+          s = HERO[i];
         const mkP = (parent, attrs) => {
           const el = document.createElementNS(SVGNS, "path");
           for (const k in attrs) el.setAttribute(k, attrs[k]);
@@ -464,16 +486,15 @@
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */
       /* 今日数据行（2026-10-14 需求）：今日初诊/今日业绩，取 BI 门店表各店实时列。
-         两项分两行显示（2026-10-14 需求二）。 */
-      /* 两列对齐（2026-10-14 需求）：第一行「今日数据：X人」，第二行只有「Y万元」，
-         数值统一右对齐成一列（label 占满剩余宽度把数值顶到右侧）。 */
+         2026-10-18 改版：第一行只放「今日数据：」，字号/字距/颜色与店名一致；
+         第二行另起一行放「X人/Y万元」，加粗，字号取完成率(24u)的 2/3 = 16u。 */
       const todayHTML = (s) =>
         s.todayRev == null
-          ? `<div class="t-line"><span class="t-lab">今日数据：</span><span class="t-val">—</span></div>
-             <div class="t-line"><span class="t-lab"></span><span class="t-val">—</span></div>`
-          : `<div class="t-line"><span class="t-lab">今日数据：</span><span class="t-val">${fmtI(s.todayInit)}人</span></div>
-             <div class="t-line"><span class="t-lab"></span><span class="t-val">${fmt2(s.todayRev)}万元</span></div>`;
-      STORES.forEach((s, i) => {
+          ? `<div class="t-line"><span class="t-lab">今日数据：</span></div>
+             <div class="t-line"><span class="t-val">—</span></div>`
+          : `<div class="t-line"><span class="t-lab">今日数据：</span></div>
+             <div class="t-line"><span class="t-val">${fmtI(s.todayInit)}人/${fmt2(s.todayRev)}万元</span></div>`;
+      HERO.forEach((s, i) => {
         const seg = SEGMENTS[i];
         const center = seg.start + H.SEG_SPAN / 2;
         const y = H.CY + H.R_LABEL * Math.sin((center * Math.PI) / 180);
@@ -549,7 +570,7 @@
           ${remInit}
           ${avgRow}`;
       }
-      SEGMENTS.slice(0, STORES.length).forEach((seg, i) => {
+      SEGMENTS.slice(0, HERO.length).forEach((seg, i) => {
         hitPaths[i].style.cursor = "pointer";
         hitPaths[i].addEventListener("mouseenter", () => {
           heroMod.classList.add("focus");
@@ -561,7 +582,7 @@
             d.setAttribute("opacity", j === i ? 1 : 0.28),
           );
           labels.forEach((l, j) => l.classList.toggle("on", j === i));
-          arcTip.innerHTML = tipHTML(MODEL.stores[i]);
+          arcTip.innerHTML = tipHTML(heroEntry(i, MODEL));
           const [x, y] = labelTopPx(seg);
           arcTip.style.display = "block";
           arcTip.style.left = clamp(x, 130, 670) + "px";
@@ -584,7 +605,7 @@
       /* Hero 入场：弧长 / 水位 / 巨数同一进度驱动 */
       (function heroEnter() {
         if (!ANIM) {
-          STORES.forEach((s, i) => {
+          heroEntries(MODEL).forEach((s, i) => {
             drawProgress(i, s.revPct);
             labels[i].querySelector(".pct").textContent =
               s.revPct.toFixed(2) + "%";
@@ -600,7 +621,7 @@
           t0 = performance.now();
         (function frame(now) {
           const k = easeOut(clamp((now - t0) / DUR, 0, 1));
-          STORES.forEach((s, i) => {
+          heroEntries(MODEL).forEach((s, i) => {
             drawProgress(i, s.revPct * k);
             labels[i].querySelector(".pct").textContent =
               (s.revPct * k).toFixed(2) + "%";
@@ -1021,7 +1042,7 @@
        * ══════════════════════════════════════════════════════════ */
       const ENTRANCE_END = performance.now() + (ANIM ? 2600 : 0);
       let dispY = SERIES[curKey].y.slice(); // 折线当前显示的 y（用于插值起点）
-      let curArc = STORES.map((s) => s.revPct); // 6 段弧当前完成率
+      let curArc = heroEntries(MODEL).map((s) => s.revPct); // 6 段弧当前完成率（按站位顺序）
       let heroCur = KPI.revPct; // 水球当前水位
       let ringCur = { time: KPI.timePct, init: KPI.initPct };
       const beatFade = (el) => {
@@ -1081,7 +1102,7 @@
           fromRev = heroRev,
           fromBase = heroBase;
         const apply = (k) => {
-          m.stores.forEach((s, i) => {
+          heroEntries(m).forEach((s, i) => {
             const p = lerp(fromArc[i], s.revPct, k);
             drawProgress(i, p);
             labels[i].querySelector(".pct").textContent = p.toFixed(2) + "%";
@@ -1100,7 +1121,7 @@
         };
         if (!animate) apply(1);
         else tween(950, apply);
-        curArc = m.stores.map((s) => s.revPct);
+        curArc = heroEntries(m).map((s) => s.revPct);
         heroCur = target;
         heroRev = toRev;
         heroBase = toBase;

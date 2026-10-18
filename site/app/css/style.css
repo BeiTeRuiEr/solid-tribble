@@ -1020,33 +1020,32 @@
         border-radius: calc(var(--u) * 2);
         transition: width 1.6s cubic-bezier(0.22, 0.9, 0.35, 1);
       }
-      /* 今日数据（2026-10-14 新增）：今日初诊/今日业绩 两行，与进度条留出间距 */
+      /* 今日数据（2026-10-18 需求改版）
+         第一行只放「今日数据：」，字号/字距/颜色与店名(.name)完全一致；
+         第二行另起一行放「X人/Y万元」，加粗，字号取完成率 24u 的 2/3（16u）。 */
       .store-label .today {
         margin-top: calc(var(--u) * 6);
         display: flex;
         flex-direction: column;
-        gap: calc(var(--u) * 1);
+        gap: calc(var(--u) * 2);
+        text-align: left;
       }
       .store-label .today .t-line {
-        display: flex;
-        align-items: baseline;
-        gap: calc(var(--u) * 4);
-        font-size: calc(var(--u) * 12);
-        color: var(--text-sub);
-        letter-spacing: 0.5px;
+        display: block;
         line-height: 1.35;
         white-space: nowrap;
         overflow: hidden;
       }
-      /* 今日初诊 / 今日业绩 数值成一列（2026-10-14 需求）：标签吃掉剩余宽度，数值右对齐 */
       .store-label .today .t-lab {
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: calc(var(--u) * 14); /* 与 .name 同字号 */
+        color: var(--text-sub);
+        letter-spacing: 1px; /* 与 .name 同字距 */
       }
       .store-label .today .t-val {
-        flex: none;
+        font-size: calc(var(--u) * 16); /* 完成率 24u × 2/3 */
+        font-weight: 700;
+        color: var(--text-main);
+        letter-spacing: 0.5px;
         font-variant-numeric: tabular-nums;
       }
       /* 弧段 hover：高亮命中项，其余降亮 */
