@@ -232,10 +232,24 @@
                 </feMerge>
               </filter>
               <radialGradient id="ballBg" cx="50%" cy="42%" r="70%" data-page-node-id="1hcQdPhzaAszTiyClJTl3r">
-                <stop offset="0%" stop-color="#4d0d18" data-page-node-id="BKjk3cO8xQwqGWFoSQtGSM" />
-                <stop offset="60%" stop-color="#2b0a12" data-page-node-id="6uZpT9dD517NbAIDmyNtKt" />
-                <stop offset="100%" stop-color="#1c060c" data-page-node-id="WcJydUlnryiaqCZMZX0Ahf" />
+                <stop offset="0%" stop-color="#6f2230" data-page-node-id="BKjk3cO8xQwqGWFoSQtGSM" />
+                <stop offset="60%" stop-color="#521620" data-page-node-id="6uZpT9dD517NbAIDmyNtKt" />
+                <stop offset="100%" stop-color="#3f1019" data-page-node-id="WcJydUlnryiaqCZMZX0Ahf" />
               </radialGradient>
+              <!-- 水球填充：取自「医生业绩排名」第一名徽章的金色渐变 #f5d67b → #c9a227，中段加过渡，避免土黄 -->
+              <linearGradient id="waterFill" gradientUnits="userSpaceOnUse" x1="450" y1="142" x2="450" y2="498" data-page-node-id="WtrFill1Grad0000000001">
+                <stop offset="0%" stop-color="#fbe9ae" data-page-node-id="WtrFill1Stop000000001" />
+                <stop offset="26%" stop-color="#f5d67b" data-page-node-id="WtrFill1Stop000000002" />
+                <stop offset="52%" stop-color="#edc766" data-page-node-id="WtrFill1Stop000000003" />
+                <stop offset="78%" stop-color="#dcb445" data-page-node-id="WtrFill1Stop000000004" />
+                <stop offset="100%" stop-color="#c9a227" data-page-node-id="WtrFill1Stop000000005" />
+              </linearGradient>
+              <!-- 后层波浪：水面高光色（浅色渐变，随波面自身范围铺开） -->
+              <linearGradient id="waterCrest" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrCrest1Grad000000001">
+                <stop offset="0%" stop-color="#fff4d2" data-page-node-id="WtrCrest1Stop00000001" />
+                <stop offset="55%" stop-color="#f8e3a8" data-page-node-id="WtrCrest1Stop00000002" />
+                <stop offset="100%" stop-color="#eccf7f" data-page-node-id="WtrCrest1Stop00000003" />
+              </linearGradient>
             </defs>
 
             <circle
@@ -273,12 +287,12 @@
               <path
                 class="wave wave2"
                 id="hWave2"
-                fill="rgba(217,184,118,0.30)" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
+                fill="url(#waterCrest)" opacity="0.9" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
               />
               <path
                 class="wave wave1"
                 id="hWave1"
-                fill="rgba(240,207,122,0.45)" data-page-node-id="sbmvpVToEQyccxw8WA5EnU"
+                fill="url(#waterFill)" opacity="0.94" data-page-node-id="sbmvpVToEQyccxw8WA5EnU"
               />
               <circle
                 cx="450"
@@ -295,11 +309,12 @@
               x="450"
               y="256"
               text-anchor="middle"
-              fill="rgba(243,236,225,0.82)"
+              fill="rgba(255,250,240,0.97)"
+              style="filter: drop-shadow(0 1px 3px rgba(58, 30, 0, 0.55))"
               font-size="20"
               letter-spacing="4" data-page-node-id="M8IrhxILRbvdKg6MKCFG0F"
             >
-              整体业绩完成率
+              业绩完成率
             </text>
             <text
               id="hPct"
