@@ -470,8 +470,8 @@
       /* 水球波浪（2026-10-19 需求：还原设计稿那种「宽而缓」的浪 + 一条宽水带）
          波长 330 ≈ 球径(356)，整个球面只有 1 个波峰+1 个波谷。
          水带做法（关键）：水带是「水面那条线的下沿带」——上沿与水面完全重合，
-         下沿是另一条浪（level+34 / amp 18），所以水带厚度 = 34 + 12·sin - 18·sin'
-         在 22~46px 之间摆动，即「时宽时窄」，且不会像「把浪往上叠」那样把水位抬高
+         下沿是另一条浪（level+34 / amp 18），所以水带厚度 = 24 + 12·sin - 8·sin'
+         在 4~44px 之间摆动，即「时宽时窄」，且不会像「把浪往上叠」那样把水位抬高
          （叠上去会让球看起来比实际更满，85% 的球像 100%）。
          三层：wave1 水体 / wave2 水带（上沿=水面） / wave3 更深的第二道水带。 */
       const WL = 330,
@@ -530,8 +530,8 @@
       function drawWaves(pct) {
         const lv = H.CY + H.R_BALL - (2 * H.R_BALL * clamp(pct, 0, 100)) / 100;
         wave1.setAttribute("d", wavePath(lv, 12));
-        if (wave2) wave2.setAttribute("d", bandPath(lv, 12, 34, 18));
-        if (wave3) wave3.setAttribute("d", bandPath(lv, 12, 70, 26));
+        if (wave2) wave2.setAttribute("d", bandPath(lv, 12, 24, 8));
+        if (wave3) wave3.setAttribute("d", bandPath(lv, 12, 50, 16));
       }
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */
