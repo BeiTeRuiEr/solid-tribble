@@ -245,11 +245,11 @@
         c.kind === "group"
           ? `<b>${fmtI(c.cum)}</b>人 · <b>${fmtW(c.total)}</b>万`
           : `<b>${fmtI(c.cum)}</b>人 · 目标 <b>${fmtI(c.target)}</b>人`;
-      /* 小组 chip 的小字行（2026-10-19 需求）：改为「今日初诊人数：N 人」。
+      /* 小组 chip 的小字行（2026-10-19 需求）：改为「今日初诊：N 人」。
          渠道 chip 保持「今日 N · 完成率 R%」不变。 */
       const chipLine2 = (c) =>
         c.kind === "group"
-          ? `今日初诊人数：<b style="font-size:14px;margin-right:0">${fmtI(c.today)}</b>人`
+          ? `今日初诊：<b style="font-size:14px">${fmtI(c.today)}</b>人`
           : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(2)}%`;
       /* 小组 chip 的条（2026-10-16 需求）：黄线填充改为 0%（原先恒为 100% 通长黄线）；
          渠道 chip 仍按完成率填充。小组本身没有可比的完成率口径，黄线会误导。 */
