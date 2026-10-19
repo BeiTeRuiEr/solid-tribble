@@ -964,8 +964,9 @@
         align-items: center;
         gap: calc(var(--u) * 10);
         width: calc(var(--u) * 178); /* 2026-10-14 改回原始宽度：加宽后会贴到圆环上 */
-        /* 下内边距加大（2026-10-14）：今日数据两行不能让最后一行贴着边框 */
-        padding: calc(var(--u) * 10) calc(var(--u) * 14) calc(var(--u) * 14);
+        /* 下内边距与上内边距对齐（2026-10-19 需求）：原来 14u 是给两行「今日数据」
+           留的富余，行高收紧后不再需要，上下各 10u，框高进一步收窄 */
+        padding: calc(var(--u) * 10) calc(var(--u) * 14);
         border-radius: calc(var(--u) * 10);
         /* 底色改回原样（2026-10-14，用户要求） */
         background: rgba(255, 255, 255, 0.055);
@@ -1031,12 +1032,16 @@
         margin-top: calc(var(--u) * 6);
         display: flex;
         flex-direction: column;
-        gap: calc(var(--u) * 2);
+        gap: 0;
         text-align: left;
       }
+      /* 行高按 u 定，不继承外层 16px 的 1.35（2026-10-19 需求）：
+         原来 .t-line 的行盒 = 16px×1.35 = 21.6px，比 12.4/14.2px 的字大一大截，
+         「今日数据」这块显得虚高、把整框撑到 123px。改成 17u≈15.1px 后
+         两行贴紧，与上面 店名→完成率 的紧凑度一致，外框跟着收到 ~104px。 */
       .store-label .today .t-line {
         display: block;
-        line-height: 1.35;
+        line-height: calc(var(--u) * 17);
         white-space: nowrap;
         overflow: hidden;
       }
