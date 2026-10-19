@@ -1096,23 +1096,7 @@
           drift3 11s linear infinite,
           bob1 6.6s ease-in-out infinite;
       }
-      /* 水面亮线跟 wave1 完全同步：同一位移曲线 + 同一起伏；
-         再用 dasharray/dashoffset 让亮段沿水面跑，做「水光流动」 */
-      .waveline {
-        stroke-dasharray: 200 120;
-        animation:
-          drift1 7s linear infinite,
-          bob1 5.4s ease-in-out infinite,
-          lineRun 4.6s linear infinite;
-      }
-      @keyframes lineRun {
-        from {
-          stroke-dashoffset: 0;
-        }
-        to {
-          stroke-dashoffset: -320;
-        }
-      }
+      /* 水面亮线已按要求退回（2026-10-19），不再做 dasharray 流光 */
       /* 中景浪的明暗呼吸：水面光感忽明忽暗一点点 */
       @keyframes crestPulse {
         0%,
@@ -1167,8 +1151,7 @@
       }
       .noanim .wave1,
       .noanim .wave2,
-      .noanim .wave3,
-      .noanim .waveline {
+      .noanim .wave3 {
         animation: none;
       }
 

@@ -467,16 +467,14 @@
         endDots[i].setAttribute("r", (H.STROKE / 2) * 0.75);
       }
 
-      /* 水球波浪（2026-10-19 升级：三层浪 + 水面亮线）
-         三层浪的 level 依次 +14 / +9 / 0，amp 16 / 13 / 10，错开相位与速度形成景深；
-         亮线用 wave1 的同一组参数，且共用同一段 CSS 动画，永远贴在水面上沿。 */
+      /* 水球波浪（2026-10-19 升级：三层浪；水面亮线已按要求退回，不再单独描边）
+         三层浪的 level 依次 +14 / +9 / 0，amp 16 / 13 / 10，错开相位与速度形成景深。 */
       const WL = 160,
         WAVE_W = H.R_BALL * 2 + WL * 2 + 120;
       const wave1 = $("hWave1"),
         wave2 = $("hWave2"),
-        wave3 = $("hWave3"),
-        waveLine = $("hWaveLine");
-      /* 只画水面那条曲线（不闭合到球底），给亮线描边用 */
+        wave3 = $("hWave3");
+      /* 只画水面那条曲线（不闭合到球底） */
       function waveEdge(level, amp) {
         const x0 = H.CX - WAVE_W / 2;
         let d = `M ${x0} ${level.toFixed(2)}`,
@@ -501,7 +499,6 @@
         if (wave3) wave3.setAttribute("d", wavePath(lv + 14, 16));
         if (wave2) wave2.setAttribute("d", wavePath(lv + 9, 13));
         wave1.setAttribute("d", wavePath(lv, 10));
-        if (waveLine) waveLine.setAttribute("d", waveEdge(lv, 10));
       }
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */

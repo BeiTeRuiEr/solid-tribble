@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-10" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-11" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -237,8 +237,7 @@
                 <stop offset="100%" stop-color="#3f1019" data-page-node-id="WcJydUlnryiaqCZMZX0Ahf" />
               </radialGradient>
               <!-- 水球填充（2026-10-19 二次调色）：整体按页面「深酒红 + 金」的调子做暖金色液体，
-                   顶部 #d9b23a 提亮一点当水体反光，底部压到 #8a6817 出纵深；
-                   亮的部分交给水面高光（waterCrest / waterLine），不再把整颗球调亮 -->
+                   顶部 #d9b23a 提亮一点当水体反光，底部压到 #8a6817 出纵深 -->
               <linearGradient id="waterFill" gradientUnits="userSpaceOnUse" x1="450" y1="142" x2="450" y2="498" data-page-node-id="WtrFill1Grad0000000001">
                 <stop offset="0%" stop-color="#d9b23a" data-page-node-id="WtrFill1Stop000000001" />
                 <stop offset="28%" stop-color="#c9a02c" data-page-node-id="WtrFill1Stop000000002" />
@@ -246,17 +245,11 @@
                 <stop offset="80%" stop-color="#a17c1d" data-page-node-id="WtrFill1Stop000000004" />
                 <stop offset="100%" stop-color="#8a6817" data-page-node-id="WtrFill1Stop000000005" />
               </linearGradient>
-              <!-- 后层波浪：水面高光（比水体亮一大档，形成明显的浅金色水线） -->
+              <!-- 后层波浪：水面高光（收敛版 —— 2026-10-19 按要求退回，不再做「明显高光」） -->
               <linearGradient id="waterCrest" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrCrest1Grad000000001">
-                <stop offset="0%" stop-color="#ffeab0" data-page-node-id="WtrCrest1Stop00000001" />
-                <stop offset="45%" stop-color="#f4d97e" data-page-node-id="WtrCrest1Stop00000002" />
-                <stop offset="100%" stop-color="#ddba50" data-page-node-id="WtrCrest1Stop00000003" />
-              </linearGradient>
-              <!-- 水面那道亮线（描边用）：几乎白的暖金，配合 hGlow 滤镜出水光 -->
-              <linearGradient id="waterLine" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrLine1Grad000000001">
-                <stop offset="0%" stop-color="#fffbe8" data-page-node-id="WtrLine1Stop000000001" />
-                <stop offset="55%" stop-color="#ffe9a6" data-page-node-id="WtrLine1Stop000000002" />
-                <stop offset="100%" stop-color="#f0c96a" data-page-node-id="WtrLine1Stop000000003" />
+                <stop offset="0%" stop-color="#dfc45f" data-page-node-id="WtrCrest1Stop00000001" />
+                <stop offset="55%" stop-color="#d2b347" data-page-node-id="WtrCrest1Stop00000002" />
+                <stop offset="100%" stop-color="#c3a02c" data-page-node-id="WtrCrest1Stop00000003" />
               </linearGradient>
             </defs>
 
@@ -307,18 +300,6 @@
                 class="wave wave1"
                 id="hWave1"
                 fill="url(#waterFill)" data-page-node-id="sbmvpVToEQyccxw8WA5EnU"
-              />
-              <!-- 水面亮线：跟着 wave1 同样的漂移/起伏；stroke-dasharray 让亮段沿水面跑，
-                   做出「水光在流动」的效果（比整颗球扫光更自然，因为没有水的地方不该有反光） -->
-              <path
-                class="waveline"
-                id="hWaveLine"
-                fill="none"
-                stroke="url(#waterLine)"
-                stroke-width="3"
-                stroke-linecap="round"
-                filter="url(#hGlow)"
-                opacity="0.92" data-page-node-id="hWaveLine0000000001"
               />
               <circle
                 cx="450"
@@ -527,7 +508,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-10"></script>
-    <script type="module" src="app/js/main.js?v=20261019-10"></script>
+        <script src="app/js/data.js?v=20261019-11"></script>
+    <script type="module" src="app/js/main.js?v=20261019-11"></script>
   </body>
 </html>
