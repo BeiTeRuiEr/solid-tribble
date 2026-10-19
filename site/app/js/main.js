@@ -804,7 +804,11 @@
       const bodyBox = document.querySelector(".trend-body");
       const TW = bodyBox.clientWidth,
         TH = bodyBox.clientHeight;
-      const PAD_L = 52,
+      /* 左侧留白（2026-10-19 需求）：删掉纵轴顶部的「万」字后，刻度数字整体左移到
+         与面板头那条金色小竖条同一条竖线上（panel-hd 的 padding-left = 16px，
+         换算成 svg 坐标约 15）。PAD_L 相应收窄，把省下的宽度还给绘图区。 */
+      const AXIS_X = 15; // 刻度文字左边缘（svg 坐标）
+      const PAD_L = 46,
         PAD_R = 18,
         PAD_T = 8,
         PAD_B = 24;
@@ -856,7 +860,7 @@
           const val = sc.step * i;
           const y = yAt(val, sc.max).toFixed(1);
           html += `<line class="grid-ln" x1="${PAD_L}" y1="${y}" x2="${TW - PAD_R}" y2="${y}" />`;
-          html += `<text class="axis-txt" x="${PAD_L - 8}" y="${+y + 5}" text-anchor="end">${fmtTick(val)}</text>`;
+          html += `<text class="axis-txt" x="${AXIS_X}" y="${+y + 5}" text-anchor="start">${fmtTick(val)}</text>`;
         }
         /* X 刻度：每 5 天一格（第 1/5/10/15… 天），只画到数据末尾；
            末尾那天与上一格相距 ≥2 天时补一个标签，让「最后一天」始终能看到 */
@@ -865,9 +869,8 @@
         xt.forEach((i) => {
           html += `<text class="axis-txt" x="${xAt(i).toFixed(1)}" y="${TH - 6}" text-anchor="middle">${dayLabel(i)}</text>`;
         });
-        /* 单位「万」放在绘图区左上角（原来是和顶部刻度挤在同一格互相重叠；
-           顶部 tag「· 万元」2026-10-18 已按需求删掉，这个单位标更不能丢） */
-        html += `<text class="axis-txt" x="6" y="${PAD_T + 5}" text-anchor="start">万</text>`;
+        /* 单位「万」已按 2026-10-19 需求删除（面板上方不再有单位标，
+           靠 tooltip 里的「万」字说明口径） */
         $("tGrid").innerHTML = html;
       }
 
@@ -900,17 +903,52 @@
         endDotEl = $("lgEndDot");
       let curKey = "all";
       let dispY = SERIES[curKey].y.slice(); // 折线当前显示的 y（用于插值起点）
+      /* 平滑曲线（2026-10-19 需求：折线改曲线图）。
+         用单调三次 Hermite（等价 d3.curveMonotoneX）：曲线严格经过每个数据点，
+         且两个点之间不会冲出数据范围 —— 普通 Catmull-Rom 在 0 值附近会鼓出负值弧线。 */
+      function smoothD(pts) {
+        const n = pts.length;
+        if (n < 2) return "";
+        const f = (v) => v.toFixed(1);
+        if (n === 2) return `M ${f(pts[0][0])},${f(pts[0][1])} L ${f(pts[1][0])},${f(pts[1][1])}`;
+        const dx = [],
+          slope = [];
+        for (let i = 0; i < n - 1; i++) {
+          dx[i] = pts[i + 1][0] - pts[i][0];
+          slope[i] = (pts[i + 1][1] - pts[i][1]) / (dx[i] || 1);
+        }
+        const m = new Array(n);
+        m[0] = slope[0];
+        m[n - 1] = slope[n - 2];
+        for (let i = 1; i < n - 1; i++) {
+          if (slope[i - 1] * slope[i] <= 0) {
+            m[i] = 0; // 拐点（峰/谷）：切线取水平，避免过冲
+          } else {
+            const w1 = 2 * dx[i] + dx[i - 1];
+            const w2 = dx[i] + 2 * dx[i - 1];
+            m[i] = (w1 + w2) / (w1 / slope[i - 1] + w2 / slope[i]);
+          }
+        }
+        let d = `M ${f(pts[0][0])},${f(pts[0][1])}`;
+        for (let i = 0; i < n - 1; i++) {
+          const h = dx[i] / 3;
+          d +=
+            ` C ${f(pts[i][0] + h)},${f(pts[i][1] + m[i] * h)}` +
+            ` ${f(pts[i + 1][0] - h)},${f(pts[i + 1][1] - m[i + 1] * h)}` +
+            ` ${f(pts[i + 1][0])},${f(pts[i + 1][1])}`;
+        }
+        return d;
+      }
       function pathsOf(y) {
         /* 只画到 NDAY（有数据的最后一天），避免末尾的补 0 点越出绘图区右边界 */
-        const pts = y
-          .slice(0, NDAY)
-          .map((yy, i) => `${xAt(i).toFixed(1)},${yy.toFixed(1)}`);
-        const dLine = "M " + pts.join(" L ");
+        const pts = y.slice(0, NDAY).map((yy, i) => [xAt(i), yy]);
+        const dLine = smoothD(pts);
         const base = (PAD_T + PLOT_H).toFixed(1);
+        const x0 = pts[0][0].toFixed(1),
+          x1 = pts[pts.length - 1][0].toFixed(1);
         return {
           dLine,
-          dArea:
-            dLine + ` L ${xAt(NDAY - 1).toFixed(1)},${base} L ${PAD_L},${base} Z`,
+          dArea: dLine + ` L ${x1},${base} L ${x0},${base} Z`,
         };
       }
       function paint(key, yOverride, colorOverride) {
