@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-12" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-13" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -235,10 +235,10 @@
                    两层浪用同一波长/振幅、只错开高度 → 中间那条浅色水带厚度恒定、跟着浪走；
                    再各加一点高斯模糊，水线不是硬边 -->
               <filter id="waveSoft" x="-12%" y="-60%" width="124%" height="220%" data-page-node-id="WaveSoftFilter00000001">
-                <feGaussianBlur stdDeviation="1.8" data-page-node-id="WaveSoftBlur0000000001" />
+                <feGaussianBlur stdDeviation="1.0" data-page-node-id="WaveSoftBlur0000000001" />
               </filter>
               <filter id="waveSoftLite" x="-12%" y="-60%" width="124%" height="220%" data-page-node-id="WaveSoftLiteFilter000001">
-                <feGaussianBlur stdDeviation="1.2" data-page-node-id="WaveSoftLiteBlur00000001" />
+                <feGaussianBlur stdDeviation="0.8" data-page-node-id="WaveSoftLiteBlur00000001" />
               </filter>
               <radialGradient id="ballBg" cx="50%" cy="42%" r="70%" data-page-node-id="1hcQdPhzaAszTiyClJTl3r">
                 <stop offset="0%" stop-color="#6f2230" data-page-node-id="BKjk3cO8xQwqGWFoSQtGSM" />
@@ -248,17 +248,24 @@
               <!-- 水球填充（2026-10-19 二次调色）：整体按页面「深酒红 + 金」的调子做暖金色液体，
                    顶部 #d9b23a 提亮一点当水体反光，底部压到 #8a6817 出纵深 -->
               <linearGradient id="waterFill" gradientUnits="userSpaceOnUse" x1="450" y1="142" x2="450" y2="498" data-page-node-id="WtrFill1Grad0000000001">
-                <stop offset="0%" stop-color="#d9b23a" data-page-node-id="WtrFill1Stop000000001" />
-                <stop offset="28%" stop-color="#c9a02c" data-page-node-id="WtrFill1Stop000000002" />
-                <stop offset="55%" stop-color="#b78f24" data-page-node-id="WtrFill1Stop000000003" />
-                <stop offset="80%" stop-color="#a17c1d" data-page-node-id="WtrFill1Stop000000004" />
-                <stop offset="100%" stop-color="#8a6817" data-page-node-id="WtrFill1Stop000000005" />
+                <stop offset="0%" stop-color="#bf9427" data-page-node-id="WtrFill1Stop000000001" />
+                <stop offset="28%" stop-color="#b48a24" data-page-node-id="WtrFill1Stop000000002" />
+                <stop offset="55%" stop-color="#a67f20" data-page-node-id="WtrFill1Stop000000003" />
+                <stop offset="80%" stop-color="#96721c" data-page-node-id="WtrFill1Stop000000004" />
+                <stop offset="100%" stop-color="#805f16" data-page-node-id="WtrFill1Stop000000005" />
               </linearGradient>
               <!-- 后层波浪：水面高光（2026-10-19 改为设计稿那种宽而柔的浅色水带） -->
               <linearGradient id="waterCrest" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrCrest1Grad000000001">
-                <stop offset="0%" stop-color="#e7cc74" data-page-node-id="WtrCrest1Stop00000001" />
-                <stop offset="55%" stop-color="#dcbf5f" data-page-node-id="WtrCrest1Stop00000002" />
-                <stop offset="100%" stop-color="#cdae4a" data-page-node-id="WtrCrest1Stop00000003" />
+                <stop offset="0%" stop-color="#a57a16" data-page-node-id="WtrCrest1Stop00000001" />
+                <stop offset="55%" stop-color="#997012" data-page-node-id="WtrCrest1Stop00000002" />
+                <stop offset="100%" stop-color="#8c660f" data-page-node-id="WtrCrest1Stop00000003" />
+              </linearGradient>
+              <!-- 最远那层浪用浅奶金色（2026-10-19）：它只在水带上方露出一条，
+                   若沿用琥珀色，40% 透明度压在深红底上会发灰发脏 -->
+              <linearGradient id="waterHalo" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrHalo1Grad0000000001">
+                <stop offset="0%" stop-color="#b2851a" data-page-node-id="WtrHalo1Stop00000000001" />
+                <stop offset="60%" stop-color="#a67b16" data-page-node-id="WtrHalo1Stop00000000002" />
+                <stop offset="100%" stop-color="#987012" data-page-node-id="WtrHalo1Stop00000000003" />
               </linearGradient>
             </defs>
 
@@ -294,22 +301,23 @@
 
             <g clip-path="url(#ballClip)" data-page-node-id="ttIOl0gnBMeBeR1Yr37CqP">
               <circle cx="450" cy="320" r="178" fill="url(#ballBg)" data-page-node-id="DXxDqY4JIU6l09di5Br8qY" />
-              <!-- 三层浪：wave3 最远/最慢、wave2 中景、wave1 主体水面，逐层变亮。
-                   三层都过 waveSoft 柔化，水线不是硬边 -->
-              <path
-                class="wave wave3"
-                id="hWave3"
-                fill="url(#waterCrest)" opacity="0.12" filter="url(#waveSoft)" data-page-node-id="hWave3Path000000001"
-              />
-              <path
-                class="wave wave2"
-                id="hWave2"
-                fill="url(#waterCrest)" opacity="0.7" filter="url(#waveSoft)" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
-              />
+              <!-- 三层水：wave1 水体在下；wave3 是更深的第二道水带（34~70px 段）；
+                   wave2 是主水带（贴水面 0~34px）。两层水带上沿都和水面完全重合，
+                   所以「加深水带」不会把水位抬高。 -->
               <path
                 class="wave wave1"
                 id="hWave1"
                 fill="url(#waterFill)" filter="url(#waveSoftLite)" data-page-node-id="sbmvpVToEQyccxw8WA5EnU"
+              />
+              <path
+                class="wave wave3"
+                id="hWave3"
+                fill="url(#waterHalo)" opacity="0.92" filter="url(#waveSoft)" data-page-node-id="hWave3Path000000001"
+              />
+              <path
+                class="wave wave2"
+                id="hWave2"
+                fill="url(#waterCrest)" filter="url(#waveSoft)" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
               />
               <circle
                 cx="450"
@@ -518,7 +526,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-12"></script>
-    <script type="module" src="app/js/main.js?v=20261019-12"></script>
+        <script src="app/js/data.js?v=20261019-13"></script>
+    <script type="module" src="app/js/main.js?v=20261019-13"></script>
   </body>
 </html>

@@ -467,25 +467,45 @@
         endDots[i].setAttribute("r", (H.STROKE / 2) * 0.75);
       }
 
-      /* 水球波浪（2026-10-19 需求：还原设计稿那种「宽而缓」的浪）
-         波长 330 ≈ 球径(356)，整个球面只有 1 个波峰+1 个波谷，起伏舒展。
-         三层浪用同一振幅、只错开高度：wave3 +26 / wave2 +13 / wave1 0，
-         于是水面那条浅色水带厚度恒定（13px），是「跟着浪走的一条带」而不是一团雾。 */
+      /* 水球波浪（2026-10-19 需求：还原设计稿那种「宽而缓」的浪 + 一条宽水带）
+         波长 330 ≈ 球径(356)，整个球面只有 1 个波峰+1 个波谷。
+         水带做法（关键）：水带是「水面那条线的下沿带」——上沿与水面完全重合，
+         下沿是另一条浪（level+34 / amp 18），所以水带厚度 = 34 + 12·sin - 18·sin'
+         在 22~46px 之间摆动，即「时宽时窄」，且不会像「把浪往上叠」那样把水位抬高
+         （叠上去会让球看起来比实际更满，85% 的球像 100%）。
+         三层：wave1 水体 / wave2 水带（上沿=水面） / wave3 更深的第二道水带。 */
       const WL = 330,
         WAVE_W = H.R_BALL * 2 + WL * 2 + 120;
       const wave1 = $("hWave1"),
         wave2 = $("hWave2"),
         wave3 = $("hWave3");
-      /* 只画水面那条曲线（不闭合到球底） */
-      function waveEdge(level, amp) {
-        const x0 = H.CX - WAVE_W / 2;
-        let d = `M ${x0} ${level.toFixed(2)}`,
-          x = x0;
-        while (x < x0 + WAVE_W) {
-          d +=
-            ` Q ${x + WL * 0.25} ${level - amp}, ${x + WL * 0.5} ${level}` +
-            ` Q ${x + WL * 0.75} ${level + amp}, ${x + WL} ${level}`;
+      /* 只画水面那条曲线（不闭合到球底）；rev=true 时反向画（用于水带下沿） */
+      function waveEdge(level, amp, rev) {
+        const x0 = H.CX - WAVE_W / 2,
+          n = Math.ceil(WAVE_W / WL);
+        const segs = [];
+        let x = x0;
+        for (let k = 0; k < n; k++) {
+          segs.push({
+            s: [x, level],
+            c1: [x + WL * 0.25, level - amp],
+            m: [x + WL * 0.5, level],
+            c2: [x + WL * 0.75, level + amp],
+            e: [x + WL, level],
+          });
           x += WL;
+        }
+        const f = (v) => v.toFixed(2);
+        let d = `M ${rev ? x : x0} ${f(level)}`;
+        const list = rev ? segs.slice().reverse() : segs;
+        for (const g of list) {
+          if (!rev) {
+            d += ` Q ${f(g.c1[0])} ${f(g.c1[1])} ${f(g.m[0])} ${f(g.m[1])}`;
+            d += ` Q ${f(g.c2[0])} ${f(g.c2[1])} ${f(g.e[0])} ${f(g.e[1])}`;
+          } else {
+            d += ` Q ${f(g.c2[0])} ${f(g.c2[1])} ${f(g.m[0])} ${f(g.m[1])}`;
+            d += ` Q ${f(g.c1[0])} ${f(g.c1[1])} ${f(g.s[0])} ${f(g.s[1])}`;
+          }
         }
         return d;
       }
@@ -496,11 +516,22 @@
           ` L ${x0 + WAVE_W} ${H.CY + H.R_BALL + 60} L ${x0} ${H.CY + H.R_BALL + 60} Z`
         );
       }
+      /* 水带：上沿贴着水面，下沿是一条更低的浪（厚度随两条浪的相位变化） */
+      function bandPath(top, topAmp, thick, botAmp) {
+        const x0 = H.CX - WAVE_W / 2,
+          x1 = x0 + WAVE_W;
+        return (
+          waveEdge(top, topAmp) +
+          ` L ${x1.toFixed(2)} ${(top + thick).toFixed(2)} ` +
+          waveEdge(top + thick, botAmp, true).replace(/^M [^Q]+/, "") +
+          " Z"
+        );
+      }
       function drawWaves(pct) {
         const lv = H.CY + H.R_BALL - (2 * H.R_BALL * clamp(pct, 0, 100)) / 100;
-        if (wave3) wave3.setAttribute("d", wavePath(lv + 24, 12));
-        if (wave2) wave2.setAttribute("d", wavePath(lv + 12, 12));
         wave1.setAttribute("d", wavePath(lv, 12));
+        if (wave2) wave2.setAttribute("d", bandPath(lv, 12, 34, 18));
+        if (wave3) wave3.setAttribute("d", bandPath(lv, 12, 70, 26));
       }
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */
