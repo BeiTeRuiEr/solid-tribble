@@ -495,13 +495,15 @@
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */
       /* 今日数据行（2026-10-14 需求）：今日初诊/今日业绩，取 BI 门店表各店实时列。
-         2026-10-18 改版：第一行只放「今日数据：」，字号/字距/颜色与店名一致；
-         第二行另起一行放「X人/Y万元」，加粗，字号取完成率(24u)的 2/3 = 16u。 */
+         2026-10-18 改版：第一行只放「今日数据」，字号/字距/颜色与店名一致
+         （2026-10-19：去掉了冒号，与店名对齐更干净）；
+         第二行另起一行放「X人/Y万元」，加粗，字号取完成率(24u)的 2/3 = 16u。
+         右列的三个框由 CSS `.store-label.right .today` 改成右对齐。 */
       const todayHTML = (s) =>
         s.todayRev == null
-          ? `<div class="t-line"><span class="t-lab">今日数据：</span></div>
+          ? `<div class="t-line"><span class="t-lab">今日数据</span></div>
              <div class="t-line"><span class="t-val">—</span></div>`
-          : `<div class="t-line"><span class="t-lab">今日数据：</span></div>
+          : `<div class="t-line"><span class="t-lab">今日数据</span></div>
              <div class="t-line"><span class="t-val">${fmtI(s.todayInit)}人/${fmt2(s.todayRev)}万元</span></div>`;
       HERO.forEach((s, i) => {
         const seg = SEGMENTS[i];
