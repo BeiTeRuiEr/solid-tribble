@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-14" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-15" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -301,23 +301,18 @@
 
             <g clip-path="url(#ballClip)" data-page-node-id="ttIOl0gnBMeBeR1Yr37CqP">
               <circle cx="450" cy="320" r="178" fill="url(#ballBg)" data-page-node-id="DXxDqY4JIU6l09di5Br8qY" />
-              <!-- 三层水：wave1 水体在下；wave3 是更深的第二道水带（34~70px 段）；
-                   wave2 是主水带（贴水面 0~34px）。两层水带上沿都和水面完全重合，
-                   所以「加深水带」不会把水位抬高。 -->
+              <!-- 两层水（2026-10-19：回到 v2 初始界面的波纹）
+                   wave2 在水面下 9px、振幅更大，只在 wave1 的波谷处露出一道浅色水纹，
+                   这正是原始设计里那条「波浪」的来路。 -->
+              <path
+                class="wave wave2"
+                id="hWave2"
+                fill="url(#waterCrest)" opacity="0.92" filter="url(#waveSoft)" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
+              />
               <path
                 class="wave wave1"
                 id="hWave1"
                 fill="url(#waterFill)" filter="url(#waveSoftLite)" data-page-node-id="sbmvpVToEQyccxw8WA5EnU"
-              />
-              <path
-                class="wave wave3"
-                id="hWave3"
-                fill="url(#waterHalo)" opacity="0.92" filter="url(#waveSoft)" data-page-node-id="hWave3Path000000001"
-              />
-              <path
-                class="wave wave2"
-                id="hWave2"
-                fill="url(#waterCrest)" filter="url(#waveSoft)" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
               />
               <circle
                 cx="450"
@@ -526,7 +521,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-14"></script>
-    <script type="module" src="app/js/main.js?v=20261019-14"></script>
+        <script src="app/js/data.js?v=20261019-15"></script>
+    <script type="module" src="app/js/main.js?v=20261019-15"></script>
   </body>
 </html>

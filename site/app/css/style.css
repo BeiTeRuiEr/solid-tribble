@@ -1085,12 +1085,10 @@
           drift1 7s linear infinite,
           bob1 5.4s ease-in-out infinite;
       }
-      /* 主水带（wave2）必须与 wave1 完全同速同相：它的上沿就是水面那条线，
-         一旦错开，水带会浮到水面之上或缩进水里，露出难看的错位。 */
       .wave2 {
         animation:
-          drift1 7s linear infinite,
-          bob1 5.4s ease-in-out infinite,
+          drift2 4.5s linear infinite,
+          bob2 4.2s ease-in-out infinite,
           crestPulse 6.4s ease-in-out infinite;
       }
       .wave3 {
@@ -1103,10 +1101,10 @@
       @keyframes crestPulse {
         0%,
         100% {
-          opacity: 1;
+          opacity: 0.92;
         }
         50% {
-          opacity: 0.86;
+          opacity: 0.78;
         }
       }
       @keyframes drift1 {
@@ -1114,20 +1112,20 @@
           transform: translateX(0);
         }
         to {
-          transform: translateX(-330px);
+          transform: translateX(-160px);
         }
       }
       @keyframes drift2 {
         from {
-          transform: translateX(0);
+          transform: translateX(-80px);
         }
         to {
-          transform: translateX(-330px);
+          transform: translateX(0);
         }
       }
       @keyframes drift3 {
         from {
-          transform: translateX(-330px);
+          transform: translateX(-160px);
         }
         to {
           transform: translateX(0);
