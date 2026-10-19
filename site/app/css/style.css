@@ -980,11 +980,15 @@
           border-color 0.25s ease,
           opacity 0.25s ease;
       }
+      /* 2026-10-19 需求：六个框整体往外挪一点，离圆环远些。
+         往外出 34u≈30px —— 左右两侧各有 48px 余量（左侧 pRev 到 512、
+         hero 从 560 起；右侧 hero 到 1360、pDoctor 从 1408 起），
+         挪完还剩 18px，既拉开与圆环的距离（7px→36px），也不会压到侧栏面板。 */
       .store-label.left {
-        left: 0;
+        left: calc(var(--u) * -34);
       }
       .store-label.right {
-        right: 0;
+        right: calc(var(--u) * -34);
         flex-direction: row-reverse;
         text-align: right;
       }
