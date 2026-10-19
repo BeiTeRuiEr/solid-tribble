@@ -1077,12 +1077,51 @@
         border-color: rgba(212, 175, 55, 0.65);
       }
 
-      /* 波浪平移：整数波长 → 无缝循环 */
+      /* 波浪平移 + 轻微起伏（2026-10-19 升级）：整数波长 → 无缝循环。
+         平移用 transform，起伏用独立的 translate 属性，两者互不覆盖；
+         三层浪速度/方向/相位都不同，叠加起来才有水在动的层次感。 */
       .wave1 {
-        animation: drift1 7s linear infinite;
+        animation:
+          drift1 7s linear infinite,
+          bob1 5.4s ease-in-out infinite;
       }
       .wave2 {
-        animation: drift2 4.5s linear infinite;
+        animation:
+          drift2 4.5s linear infinite,
+          bob2 4.2s ease-in-out infinite,
+          crestPulse 6.4s ease-in-out infinite;
+      }
+      .wave3 {
+        animation:
+          drift3 11s linear infinite,
+          bob1 6.6s ease-in-out infinite;
+      }
+      /* 水面亮线跟 wave1 完全同步：同一位移曲线 + 同一起伏；
+         再用 dasharray/dashoffset 让亮段沿水面跑，做「水光流动」 */
+      .waveline {
+        stroke-dasharray: 200 120;
+        animation:
+          drift1 7s linear infinite,
+          bob1 5.4s ease-in-out infinite,
+          lineRun 4.6s linear infinite;
+      }
+      @keyframes lineRun {
+        from {
+          stroke-dashoffset: 0;
+        }
+        to {
+          stroke-dashoffset: -320;
+        }
+      }
+      /* 中景浪的明暗呼吸：水面光感忽明忽暗一点点 */
+      @keyframes crestPulse {
+        0%,
+        100% {
+          opacity: 0.9;
+        }
+        50% {
+          opacity: 0.68;
+        }
       }
       @keyframes drift1 {
         from {
@@ -1100,8 +1139,36 @@
           transform: translateX(0);
         }
       }
+      @keyframes drift3 {
+        from {
+          transform: translateX(-160px);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+      @keyframes bob1 {
+        0%,
+        100% {
+          translate: 0 0;
+        }
+        50% {
+          translate: 0 -3.5px;
+        }
+      }
+      @keyframes bob2 {
+        0%,
+        100% {
+          translate: 0 0;
+        }
+        50% {
+          translate: 0 2.5px;
+        }
+      }
       .noanim .wave1,
-      .noanim .wave2 {
+      .noanim .wave2,
+      .noanim .wave3,
+      .noanim .waveline {
         animation: none;
       }
 
