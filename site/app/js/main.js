@@ -230,8 +230,13 @@
          「客单 xxx 元」搬去独立的「平均单体」卡（见下面的 vAvgTicket）。 */
       setTxt("subInit", `基础 ${fmtI(totalInitBase)} 人`);
       /* 平均单体（2026-10-16 新增卡）= 六个店业绩之和 ÷ 六个店初诊之和 = KPI.avgTicket（元），
-         与「累计初诊」完全同源（data.js 汇总）。 */
+         与「累计初诊」完全同源（data.js 汇总）。
+         小字行 2026-10-19 改为「今日单体」= 今日业绩 ÷ 今日初诊（同样按元算），
+         今日初诊为 0 时无法相除，显示「—」。 */
+      const todayTicketHTML = (k) =>
+        k.todayInit ? `今日单体：${fmtY((k.todayRev * 1e4) / k.todayInit)}` : "今日单体：—";
       setTxt("vAvgTicket", fmtY(KPI.avgTicket));
+      setTxt("subAvgTicket", todayTicketHTML(KPI));
 
       /* ── 顶部 chip：两种口径
          channel：X人 · 目标 Y人 ／ 今日 N · 完成率 R%（条形 = 完成率）
@@ -240,11 +245,11 @@
         c.kind === "group"
           ? `<b>${fmtI(c.cum)}</b>人 · <b>${fmtW(c.total)}</b>万`
           : `<b>${fmtI(c.cum)}</b>人 · 目标 <b>${fmtI(c.target)}</b>人`;
-      /* 小组 chip 的小字行（2026-10-16 需求）：去掉「今日业绩 xxx 元/万」，只留「今日 N」。
+      /* 小组 chip 的小字行（2026-10-19 需求）：改为「今日初诊人数：N 人」。
          渠道 chip 保持「今日 N · 完成率 R%」不变。 */
       const chipLine2 = (c) =>
         c.kind === "group"
-          ? `今日 <b style="font-size:14px">${fmtI(c.today)}</b>`
+          ? `今日初诊人数：<b style="font-size:14px">${fmtI(c.today)}</b>人`
           : `今日 <b style="font-size:14px">${fmtI(c.today)}</b> · 完成率 ${c.rate.toFixed(2)}%`;
       /* 小组 chip 的条（2026-10-16 需求）：黄线填充改为 0%（原先恒为 100% 通长黄线）；
          渠道 chip 仍按完成率填充。小组本身没有可比的完成率口径，黄线会误导。 */
@@ -1126,6 +1131,7 @@
         setN("vTodayInit", m.kpi.todayInit, fmtI);
         setN("vTodayRev", m.kpi.todayRev, fmt2);
         setN("vAvgTicket", m.kpi.avgTicket, fmtY); // 平均单体（2026-10-16 新增卡）
+        setTxt("subAvgTicket", todayTicketHTML(m.kpi)); // 今日单体（2026-10-19）
         $("subInit").textContent = `基础 ${fmtI(m.totalInitBase)} 人`;
         const to = {
           time: m.kpi.timePct,
