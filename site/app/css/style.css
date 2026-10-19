@@ -147,8 +147,12 @@
         align-items: flex-end;
         gap: 3px;
       }
+      /* 2026-10-19 需求：右上角 tag（「全部 N 人 · 单位：万元」）字号再小一档，
+         12px 低于 --t5 的通用下限，属这一处的专门放行 —— 标签只是辅助说明，
+         压在按钮上方时字号大了会抢按钮的视觉重量。 */
       .panel-hd .hd-col .tag {
-        line-height: 18px;
+        line-height: 17px;
+        font-size: 12px;
       }
       .seg {
         display: flex;
