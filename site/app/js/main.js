@@ -467,9 +467,11 @@
         endDots[i].setAttribute("r", (H.STROKE / 2) * 0.75);
       }
 
-      /* 水球波浪（2026-10-19 升级：三层浪；水面亮线已按要求退回，不再单独描边）
-         三层浪的 level 依次 +14 / +9 / 0，amp 16 / 13 / 10，错开相位与速度形成景深。 */
-      const WL = 160,
+      /* 水球波浪（2026-10-19 需求：还原设计稿那种「宽而缓」的浪）
+         波长 330 ≈ 球径(356)，整个球面只有 1 个波峰+1 个波谷，起伏舒展。
+         三层浪用同一振幅、只错开高度：wave3 +26 / wave2 +13 / wave1 0，
+         于是水面那条浅色水带厚度恒定（13px），是「跟着浪走的一条带」而不是一团雾。 */
+      const WL = 330,
         WAVE_W = H.R_BALL * 2 + WL * 2 + 120;
       const wave1 = $("hWave1"),
         wave2 = $("hWave2"),
@@ -496,9 +498,9 @@
       }
       function drawWaves(pct) {
         const lv = H.CY + H.R_BALL - (2 * H.R_BALL * clamp(pct, 0, 100)) / 100;
-        if (wave3) wave3.setAttribute("d", wavePath(lv + 14, 16));
-        if (wave2) wave2.setAttribute("d", wavePath(lv + 9, 13));
-        wave1.setAttribute("d", wavePath(lv, 10));
+        if (wave3) wave3.setAttribute("d", wavePath(lv + 24, 12));
+        if (wave2) wave2.setAttribute("d", wavePath(lv + 12, 12));
+        wave1.setAttribute("d", wavePath(lv, 12));
       }
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */

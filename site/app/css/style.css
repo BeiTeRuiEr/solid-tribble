@@ -1077,9 +1077,9 @@
         border-color: rgba(212, 175, 55, 0.65);
       }
 
-      /* 波浪平移 + 轻微起伏（2026-10-19 升级）：整数波长 → 无缝循环。
+      /* 波浪平移 + 轻微起伏（2026-10-19 升级）：位移距离 = 波长 330 的整数倍 → 无缝循环。
          平移用 transform，起伏用独立的 translate 属性，两者互不覆盖；
-         三层浪速度/方向/相位都不同，叠加起来才有水在动的层次感。 */
+         波长变长后速度相应放慢（7 / 11 / 16s），才不会有「浪被拖着跑」的急感。 */
       .wave1 {
         animation:
           drift1 7s linear infinite,
@@ -1087,13 +1087,13 @@
       }
       .wave2 {
         animation:
-          drift2 4.5s linear infinite,
+          drift2 11s linear infinite,
           bob2 4.2s ease-in-out infinite,
           crestPulse 6.4s ease-in-out infinite;
       }
       .wave3 {
         animation:
-          drift3 11s linear infinite,
+          drift3 16s linear infinite,
           bob1 6.6s ease-in-out infinite;
       }
       /* 水面亮线已按要求退回（2026-10-19），不再做 dasharray 流光 */
@@ -1112,20 +1112,20 @@
           transform: translateX(0);
         }
         to {
-          transform: translateX(-160px);
+          transform: translateX(-330px);
         }
       }
       @keyframes drift2 {
         from {
-          transform: translateX(-80px);
+          transform: translateX(0);
         }
         to {
-          transform: translateX(0);
+          transform: translateX(-330px);
         }
       }
       @keyframes drift3 {
         from {
-          transform: translateX(-160px);
+          transform: translateX(-330px);
         }
         to {
           transform: translateX(0);

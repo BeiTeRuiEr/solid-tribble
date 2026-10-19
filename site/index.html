@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-11" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-12" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -231,6 +231,15 @@
                   <feMergeNode in="SourceGraphic" data-page-node-id="oB9EnSy4yF36ZLJp3sIxQe" />
                 </feMerge>
               </filter>
+              <!-- 水面柔化（2026-10-19 需求：还原设计稿那种柔和的浪）：
+                   两层浪用同一波长/振幅、只错开高度 → 中间那条浅色水带厚度恒定、跟着浪走；
+                   再各加一点高斯模糊，水线不是硬边 -->
+              <filter id="waveSoft" x="-12%" y="-60%" width="124%" height="220%" data-page-node-id="WaveSoftFilter00000001">
+                <feGaussianBlur stdDeviation="1.8" data-page-node-id="WaveSoftBlur0000000001" />
+              </filter>
+              <filter id="waveSoftLite" x="-12%" y="-60%" width="124%" height="220%" data-page-node-id="WaveSoftLiteFilter000001">
+                <feGaussianBlur stdDeviation="1.2" data-page-node-id="WaveSoftLiteBlur00000001" />
+              </filter>
               <radialGradient id="ballBg" cx="50%" cy="42%" r="70%" data-page-node-id="1hcQdPhzaAszTiyClJTl3r">
                 <stop offset="0%" stop-color="#6f2230" data-page-node-id="BKjk3cO8xQwqGWFoSQtGSM" />
                 <stop offset="60%" stop-color="#521620" data-page-node-id="6uZpT9dD517NbAIDmyNtKt" />
@@ -245,12 +254,11 @@
                 <stop offset="80%" stop-color="#a17c1d" data-page-node-id="WtrFill1Stop000000004" />
                 <stop offset="100%" stop-color="#8a6817" data-page-node-id="WtrFill1Stop000000005" />
               </linearGradient>
-              <!-- 后层波浪：水面高光（收敛版 —— 2026-10-19 按要求退回，不再做「明显高光」）。
-                   它与水体顶部的明度差，保持和上一版(#cba62f 水体 / #dfc45f 水光)同样的细腻幅度 -->
+              <!-- 后层波浪：水面高光（2026-10-19 改为设计稿那种宽而柔的浅色水带） -->
               <linearGradient id="waterCrest" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrCrest1Grad000000001">
-                <stop offset="0%" stop-color="#e8cf74" data-page-node-id="WtrCrest1Stop00000001" />
-                <stop offset="55%" stop-color="#dcc05c" data-page-node-id="WtrCrest1Stop00000002" />
-                <stop offset="100%" stop-color="#cdac41" data-page-node-id="WtrCrest1Stop00000003" />
+                <stop offset="0%" stop-color="#e7cc74" data-page-node-id="WtrCrest1Stop00000001" />
+                <stop offset="55%" stop-color="#dcbf5f" data-page-node-id="WtrCrest1Stop00000002" />
+                <stop offset="100%" stop-color="#cdae4a" data-page-node-id="WtrCrest1Stop00000003" />
               </linearGradient>
             </defs>
 
@@ -286,21 +294,22 @@
 
             <g clip-path="url(#ballClip)" data-page-node-id="ttIOl0gnBMeBeR1Yr37CqP">
               <circle cx="450" cy="320" r="178" fill="url(#ballBg)" data-page-node-id="DXxDqY4JIU6l09di5Br8qY" />
-              <!-- 三层浪：wave3 最远/最慢、wave2 中景、wave1 主体水面，逐层变亮 -->
+              <!-- 三层浪：wave3 最远/最慢、wave2 中景、wave1 主体水面，逐层变亮。
+                   三层都过 waveSoft 柔化，水线不是硬边 -->
               <path
                 class="wave wave3"
                 id="hWave3"
-                fill="url(#waterCrest)" opacity="0.42" data-page-node-id="hWave3Path000000001"
+                fill="url(#waterCrest)" opacity="0.12" filter="url(#waveSoft)" data-page-node-id="hWave3Path000000001"
               />
               <path
                 class="wave wave2"
                 id="hWave2"
-                fill="url(#waterCrest)" opacity="0.9" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
+                fill="url(#waterCrest)" opacity="0.7" filter="url(#waveSoft)" data-page-node-id="gbnCEguQdvYVyL05fw3IiQ"
               />
               <path
                 class="wave wave1"
                 id="hWave1"
-                fill="url(#waterFill)" data-page-node-id="sbmvpVToEQyccxw8WA5EnU"
+                fill="url(#waterFill)" filter="url(#waveSoftLite)" data-page-node-id="sbmvpVToEQyccxw8WA5EnU"
               />
               <circle
                 cx="450"
@@ -509,7 +518,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-11"></script>
-    <script type="module" src="app/js/main.js?v=20261019-11"></script>
+        <script src="app/js/data.js?v=20261019-12"></script>
+    <script type="module" src="app/js/main.js?v=20261019-12"></script>
   </body>
 </html>
