@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-16" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-17" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -245,21 +245,23 @@
                 <stop offset="60%" stop-color="#521620" data-page-node-id="6uZpT9dD517NbAIDmyNtKt" />
                 <stop offset="100%" stop-color="#3f1019" data-page-node-id="WcJydUlnryiaqCZMZX0Ahf" />
               </radialGradient>
-              <!-- 水球填充（2026-10-19 二次调色）：整体按页面「深酒红 + 金」的调子做暖金色液体，
-                   顶部 #d9b23a 提亮一点当水体反光，底部压到 #8a6817 出纵深 -->
+              <!-- 水球填充（2026-10-20 四次调色）：取页头标题「砥砺十三载 · 感恩有你」的金色渐变
+                   （#fdf3cd → #f0d48a → #c9a227 → #9a7a24，180deg 由浅变深），
+                   整体再压暗一档（标题那四个色做水体太亮、在水球里会发白），
+                   底部再补一档 #655017 出纵深 -->
               <linearGradient id="waterFill" gradientUnits="userSpaceOnUse" x1="450" y1="142" x2="450" y2="498" data-page-node-id="WtrFill1Grad0000000001">
-                <stop offset="0%" stop-color="#bf9427" data-page-node-id="WtrFill1Stop000000001" />
-                <stop offset="28%" stop-color="#b48a24" data-page-node-id="WtrFill1Stop000000002" />
-                <stop offset="55%" stop-color="#a67f20" data-page-node-id="WtrFill1Stop000000003" />
-                <stop offset="80%" stop-color="#96721c" data-page-node-id="WtrFill1Stop000000004" />
-                <stop offset="100%" stop-color="#805f16" data-page-node-id="WtrFill1Stop000000005" />
+                <stop offset="0%" stop-color="#b18f2e" data-page-node-id="WtrFill1Stop000000001" />
+                <stop offset="30%" stop-color="#9f8029" data-page-node-id="WtrFill1Stop000000002" />
+                <stop offset="60%" stop-color="#8a6e23" data-page-node-id="WtrFill1Stop000000003" />
+                <stop offset="85%" stop-color="#725b1d" data-page-node-id="WtrFill1Stop000000004" />
+                <stop offset="100%" stop-color="#574617" data-page-node-id="WtrFill1Stop000000005" />
               </linearGradient>
-              <!-- 后层波浪（2026-10-19 三次调色）：必须是浅金，跟下面深金的水体拉开明度差，
-                   两条浪才看得出"一深一浅"。对应 v2 原始稿里 rgba(240,207,122,.45) 那层的角色 -->
+              <!-- 后层波浪（2026-10-20）：同一套标题金里最浅的一段再提亮一点，
+                   它压在水面处那条带上，必须比下方的 #ac9047 明显浅才看得出两条浪 -->
               <linearGradient id="waterCrest" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrCrest1Grad000000001">
-                <stop offset="0%" stop-color="#eccc70" data-page-node-id="WtrCrest1Stop00000001" />
-                <stop offset="45%" stop-color="#dfb954" data-page-node-id="WtrCrest1Stop00000002" />
-                <stop offset="100%" stop-color="#c89e39" data-page-node-id="WtrCrest1Stop00000003" />
+                <stop offset="0%" stop-color="#e0c574" data-page-node-id="WtrCrest1Stop00000001" />
+                <stop offset="45%" stop-color="#cfb15c" data-page-node-id="WtrCrest1Stop00000002" />
+                <stop offset="100%" stop-color="#b2913c" data-page-node-id="WtrCrest1Stop00000003" />
               </linearGradient>
               <!-- 最远那层浪用浅奶金色（2026-10-19）：它只在水带上方露出一条，
                    若沿用琥珀色，40% 透明度压在深红底上会发灰发脏 -->
@@ -522,7 +524,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-16"></script>
-    <script type="module" src="app/js/main.js?v=20261019-16"></script>
+        <script src="app/js/data.js?v=20261019-17"></script>
+    <script type="module" src="app/js/main.js?v=20261019-17"></script>
   </body>
 </html>
