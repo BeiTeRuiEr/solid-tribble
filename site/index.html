@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-18" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-19" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -245,20 +245,24 @@
                 <stop offset="60%" stop-color="#521620" data-page-node-id="6uZpT9dD517NbAIDmyNtKt" />
                 <stop offset="100%" stop-color="#3f1019" data-page-node-id="WcJydUlnryiaqCZMZX0Ahf" />
               </radialGradient>
-              <!-- 水球填充（2026-10-20 五次调色）：按指定起止色 #F7E4AD → #B99426，
-                   中间几档用同色相线性过渡，顶部浅奶金、底部琥珀金 -->
+              <!-- 水球填充（2026-10-20 六次调色）：按指定的 10 档金色等分 #e9d28f → #b99426 -->
               <linearGradient id="waterFill" gradientUnits="userSpaceOnUse" x1="450" y1="142" x2="450" y2="498" data-page-node-id="WtrFill1Grad0000000001">
-                <stop offset="0%" stop-color="#f7e4ad" data-page-node-id="WtrFill1Stop000000001" />
-                <stop offset="30%" stop-color="#e4cc85" data-page-node-id="WtrFill1Stop000000002" />
-                <stop offset="60%" stop-color="#d2b45c" data-page-node-id="WtrFill1Stop000000003" />
-                <stop offset="85%" stop-color="#c2a03a" data-page-node-id="WtrFill1Stop000000004" />
-                <stop offset="100%" stop-color="#b99426" data-page-node-id="WtrFill1Stop000000005" />
+                <stop offset="0%" stop-color="#e9d28f" data-page-node-id="WtrFill1Stop000000001" />
+                <stop offset="11.11%" stop-color="#e4cb83" data-page-node-id="WtrFill1Stop000000002" />
+                <stop offset="22.22%" stop-color="#dec478" data-page-node-id="WtrFill1Stop000000003" />
+                <stop offset="33.33%" stop-color="#d9bd6c" data-page-node-id="WtrFill1Stop000000004" />
+                <stop offset="44.44%" stop-color="#d4b660" data-page-node-id="WtrFill1Stop000000005" />
+                <stop offset="55.56%" stop-color="#ceb055" data-page-node-id="WtrFill1Stop000000006" />
+                <stop offset="66.67%" stop-color="#c9a949" data-page-node-id="WtrFill1Stop000000007" />
+                <stop offset="77.78%" stop-color="#c4a23d" data-page-node-id="WtrFill1Stop000000008" />
+                <stop offset="88.89%" stop-color="#be9b32" data-page-node-id="WtrFill1Stop000000009" />
+                <stop offset="100%" stop-color="#b99426" data-page-node-id="WtrFill1Stop000000010" />
               </linearGradient>
-              <!-- 后层波浪（2026-10-20）：水体上部已经是浅奶金，这条带若再往亮走会糊成一片，
-                   所以反过来取深一档的琥珀金，让水面处压出一条比水体深的浪，两条浪才分得开 -->
+              <!-- 后层波浪（2026-10-20）：水体顶部已是浅奶金，水带取色阶中段的深金，
+                   在水面处压出一条深色浪来区分两层 -->
               <linearGradient id="waterCrest" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrCrest1Grad000000001">
-                <stop offset="0%" stop-color="#d9bb63" data-page-node-id="WtrCrest1Stop00000001" />
-                <stop offset="45%" stop-color="#cbaa4c" data-page-node-id="WtrCrest1Stop00000002" />
+                <stop offset="0%" stop-color="#d4b660" data-page-node-id="WtrCrest1Stop00000001" />
+                <stop offset="45%" stop-color="#c9a949" data-page-node-id="WtrCrest1Stop00000002" />
                 <stop offset="100%" stop-color="#b99426" data-page-node-id="WtrCrest1Stop00000003" />
               </linearGradient>
               <!-- 最远那层浪用浅奶金色（2026-10-19）：它只在水带上方露出一条，
@@ -523,7 +527,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-18"></script>
-    <script type="module" src="app/js/main.js?v=20261019-18"></script>
+        <script src="app/js/data.js?v=20261019-19"></script>
+    <script type="module" src="app/js/main.js?v=20261019-19"></script>
   </body>
 </html>
