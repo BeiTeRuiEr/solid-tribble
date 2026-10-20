@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-21" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-22" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -487,6 +487,8 @@
             <g id="tGrid" data-page-node-id="Mm6sNlXBqczanyQpGcY3i3"></g>
             <path id="lgArea" fill="url(#tArea)" data-page-node-id="NElzhacJCJGnJOndXfSOFE" />
             <path id="lgLine" data-page-node-id="5RSnTLFuE0Ce5NmSq2z3r3" />
+            <!-- 缺失日标记层（2026-10-20）：daily 里没有数据的那天，在零线上画空心点 -->
+            <g id="tGap" data-page-node-id="TGap0Marks0Group00000001"></g>
             <circle class="pulse" id="lgPulse" r="5" data-page-node-id="AyLQ2JjmeXhxXYISbwHnlS" />
             <circle fill="#fff" id="lgEndDot" r="3.2" data-page-node-id="jD3NmXOrdC1bKDNkBvpAKp" />
             <line
@@ -527,7 +529,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-21"></script>
-    <script type="module" src="app/js/main.js?v=20261019-21"></script>
+        <script src="app/js/data.js?v=20261019-22"></script>
+    <script type="module" src="app/js/main.js?v=20261019-22"></script>
   </body>
 </html>

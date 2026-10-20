@@ -1263,6 +1263,17 @@
         color: var(--gold-num);
         font: 600 var(--t5) var(--num-font);
       }
+      /* 「暂无数据」：比数值弱一档，明确表示这天的数没抓到、不是 0 业绩 */
+      .tip b.na {
+        color: rgba(243, 236, 225, 0.62);
+        font-weight: 500;
+      }
+      /* 缺失日标记：零线上的空心小点 */
+      .gap-dot {
+        fill: rgba(240, 207, 122, 0.14);
+        stroke: rgba(240, 207, 122, 0.55);
+        stroke-width: 1.2;
+      }
 
       .select {
         position: relative;

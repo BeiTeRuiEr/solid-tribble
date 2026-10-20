@@ -379,18 +379,29 @@
     });
     const byId = {};
     const all = new Array(T).fill(0);
+    /* has[i] = 第 i 天在 daily.json 里到底有没有行（2026-10-20 新增）。
+       以前「没抓到」和「当天业绩为 0」在数组里都是一样的 0，趋势图看不出区别：
+       10-19 daily 没抓到 → 曲线画成 0，看着像当天一分钱没收。
+       记下每天的存在性，让 tooltip 能显示「暂无数据」、并在缺失点画空心标记。 */
+    const has = new Array(T).fill(false);
     stores.forEach((s) => {
       // 按 BI 里的真实店名取每日数据（页面叫「三级医院」但 BI 叫「医院」时也能取到）
       const m = per[s.biName || s.name] || {};
       const arr = [];
-      for (let i = 0; i < T; i++) arr.push(m[i] || 0);
+      for (let i = 0; i < T; i++) {
+        if (m[i] != null) has[i] = true;
+        arr.push(m[i] || 0);
+      }
       /* 今日点（下标 T-1）用门店表实时「今日业绩」覆盖：
          daily.json 已改为每天凌晨抓一次，白天它的今日格不刷新。
          找不到该列时 s.todayRev 为 null → 保持 daily 原值，不写 0。
          2026-10-18 修正：BI 门店表「今日业绩」经常整列为 0（当天还没结算/未刷新），
          直接覆盖会把 daily 里已经存在的今日实收抹成 0，曲线末尾凭空掉到 0。
          改为取两者较大值 —— 只有实时列确实更大（更及时）时才覆盖。 */
-      if (s.todayRev != null && s.todayRev > arr[T - 1]) arr[T - 1] = s.todayRev;
+      if (s.todayRev != null && s.todayRev > arr[T - 1]) {
+        arr[T - 1] = s.todayRev;
+        has[T - 1] = true; // 今日点来自门店表实时列，也算「有数据」
+      }
       byId[s.id] = arr;
       for (let i = 0; i < T; i++) all[i] += arr[i];
     });
@@ -422,7 +433,7 @@
       channels,
       channelCards,
       staff,
-      daily: { byId, all },
+      daily: { byId, all, has },
       /* 原始表（2026-10-14 新增）：给「更多」弹窗渲染明细表格用，
          每次心跳随模型整体替换，弹窗打开时拿到的永远是最新值。 */
       tables: {
@@ -446,7 +457,7 @@
       channelCards,
       groups,
       staff,
-      daily: { byId, all },
+      daily: { byId, all, has },
       totals: { totalBase, totalRev, totalInitBase, totalInit, totalTodayInit, totalTodayRev },
       kpi,
       model,

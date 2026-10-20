@@ -91,6 +91,24 @@ jobs:
           else
             M=main
           fi
+
+          # ── daily 陈旧兜底（2026-10-20）────────────────────────────────
+          # 上面那条内置 cron 在本仓库经常不触发（10-14 停过 4 天，10-18 之后又停了 2 天），
+          # 结果 daily.json 停在 10-18 10:34：18 号只有当天上午的半天（0.83 万）、
+          # 19 号整条 0，趋势图末尾看起来像业绩掉到 0，实际是数据没抓到。
+          # 兜底：main 模式先读 daily.json 的 updated_at，超过 20 小时就本次一并抓 daily(=both)。
+          # 抓成功后 updated_at 立刻变新，后续运行自然不再触发，不会反复抓大表。
+          # 限流：只在每小时 :00~:04 那次运行自动补，避免 daily 抓取失败时每 5 分钟重试；
+          #       但 push 触发的那次不受限（改代码时顺手把数据补齐）。
+          if [ "$M" = "main" ]; then
+            STALE=$(python3 scripts/daily_age.py 20)
+            echo "daily 检查：${STALE#*|}"
+            if [ "${STALE%%|*}" = "stale" ] && { [ "$MIN" -lt 5 ] || [ "$GITHUB_EVENT_NAME" = "push" ]; }; then
+              M=both
+              echo "→ daily.json 已过期，本次连同每日业绩一起抓（FETCH_MODE=both）"
+            fi
+          fi
+
           echo "FETCH_MODE=$M" >> "$GITHUB_ENV"
           echo "UTC=$(date -u +%H:%M) input='${INPUT_MODE}' override='${MODE_OVERRIDE}' → FETCH_MODE=$M"
 

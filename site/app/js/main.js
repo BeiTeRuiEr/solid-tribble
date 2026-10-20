@@ -151,6 +151,11 @@
       const initActualOf = (s) => s.initActual;
       const dailyByStore = DATA.daily.byId;
       const dailyAll = DATA.daily.all;
+      /* 每天在 daily.json 里到底有没有数据（2026-10-20 新增）。
+         没抓到的日子数组里也是 0，跟「当天确实 0 业绩」分不开 —— 10-19 就是这样
+         被画成一条 0 的平线。这里留一份存在性，tooltip 显示「暂无数据」、
+         缺失的那天在零线上画个空心点。心跳时随模型一起替换。 */
+      let HAS = (DATA.daily.has || []).slice();
 
       const KPI = DATA.kpi;
       /* 当前生效的数据模型（首次 = 刚抓到的 JSON；5 分钟心跳后会整体替换） */
@@ -915,6 +920,21 @@
         $("tGrid").innerHTML = html;
       }
 
+      /* 缺失日标记（2026-10-20）：某天 daily.json 里没有行时，在零线上画一个空心点。
+         这样「没抓到数据」和「当天业绩真的为 0」在图上能分辨开，
+         不至于像之前那样只看到一条贴着底边的平线、以为业绩掉没了。 */
+      function drawGapMarks() {
+        const g = $("tGap");
+        if (!g) return;
+        const y0 = (PAD_T + PLOT_H).toFixed(1);
+        let html = "";
+        for (let i = 0; i < NDAY; i++) {
+          if (HAS[i]) continue;
+          html += `<circle class="gap-dot" cx="${xAt(i).toFixed(1)}" cy="${y0}" r="2.6" />`;
+        }
+        g.innerHTML = html;
+      }
+
       const SERIES = {
         all: { name: "全部门店", color: "#f0cf7a", data: dailyAll },
       };
@@ -937,6 +957,7 @@
       Object.values(SERIES).forEach(rescaleSeries);
       NDAY = dataDays(); // BI 数据到第几天，横轴就画几天
       drawGrid(SERIES.all.sc);
+      drawGapMarks();
 
       const lineEl = $("lgLine"),
         areaEl = $("lgArea"),
@@ -1107,7 +1128,9 @@
           hDot.setAttribute("cy", y);
           hDot.setAttribute("stroke", se.color);
           tip.style.display = "block";
-          tip.innerHTML = `${dayFull(i)} · <b>${se.data[i].toFixed(2)}</b> 万<br>累计 <b>${se.cum[i].toFixed(2)}</b> 万 · ${se.name}`;
+          tip.innerHTML = HAS[i]
+            ? `${dayFull(i)} · <b>${se.data[i].toFixed(2)}</b> 万<br>累计 <b>${se.cum[i].toFixed(2)}</b> 万 · ${se.name}`
+            : `${dayFull(i)} · <b class="na">暂无数据</b><br>累计 <b>${se.cum[i].toFixed(2)}</b> 万 · ${se.name}`;
           const tw = tip.offsetWidth / SCALE;
           tip.style.left = x + (i > (NDAY * 2) / 3 ? -tw - 16 : 16) + "px";
           tip.style.top = clamp(y - 30, 4, TH - 60) + "px";
@@ -1282,11 +1305,13 @@
       function updateTrend(m, animate) {
         SERIES.all.data = m.daily.all;
         m.stores.forEach((s) => (SERIES[s.id].data = m.daily.byId[s.id]));
+        HAS = (m.daily.has || HAS).slice(); // 缺失日标记跟着心跳一起更新
         /* 横轴跨度跟着 BI 的数据走：BI 多了新的一天，轴自动延长一格 */
         NDAY = dataDays();
         /* 每个系列按自己新的数据重新定标（选门店时纵轴同样跟着走） */
         Object.values(SERIES).forEach(rescaleSeries);
         drawGrid(SERIES[curKey].sc);
+        drawGapMarks();
         const fromY = dispY;
         dispY = SERIES[curKey].y.slice();
         if (!animate) {
