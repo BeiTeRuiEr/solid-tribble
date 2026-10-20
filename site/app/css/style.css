@@ -1077,9 +1077,13 @@
         border-color: rgba(212, 175, 55, 0.65);
       }
 
-      /* 波浪平移 + 轻微起伏（2026-10-19 升级）：位移距离 = 波长 330 的整数倍 → 无缝循环。
-         平移用 transform，起伏用独立的 translate 属性，两者互不覆盖；
-         波长变长后速度相应放慢（7 / 11 / 16s），才不会有「浪被拖着跑」的急感。 */
+      /* 波浪平移 + 轻微起伏（2026-10-19 升级，2026-10-20 修回跳）：
+         平移距离必须 = 波长(WL=160) 的**整数倍**，否则循环点会跳相位。
+         原 drift2 是 -80px → 0，只走了半个波长，每 4.5 秒就把「波峰」瞬间换成「波谷」，
+         看着像整片水闪一下又从头开始 —— 这就是用户说的「循环两秒突然回到最开始」。
+         现在改成 -160px → 0（整波长），速度仍保持原来的 17.8px/s（时长 4.5s → 9s），
+         所以只是「不再回跳」，浪的移动快慢没变。
+         平移用 transform，起伏用独立的 translate 属性，两者互不覆盖。 */
       .wave1 {
         animation:
           drift1 7s linear infinite,
@@ -1087,7 +1091,7 @@
       }
       .wave2 {
         animation:
-          drift2 4.5s linear infinite,
+          drift2 9s linear infinite,
           bob2 4.2s ease-in-out infinite,
           crestPulse 6.4s ease-in-out infinite;
       }
@@ -1117,7 +1121,7 @@
       }
       @keyframes drift2 {
         from {
-          transform: translateX(-80px);
+          transform: translateX(-160px);
         }
         to {
           transform: translateX(0);
