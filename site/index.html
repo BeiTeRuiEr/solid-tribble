@@ -31,7 +31,7 @@
     底部折线，页面不重载。历史日序列固定，增长落在「今天」的
     数据点上；左下角有心跳指示器（倒计时 + 刷新闪烁）。
   ============================================================-->
-        <link rel="stylesheet" href="app/css/style.css?v=20261019-15" />
+        <link rel="stylesheet" href="app/css/style.css?v=20261019-16" />
   </head>
   <body data-page-node-id="v0FKEsf7Q6nRDLdoApuXJm">
     <div id="stage" data-page-node-id="kpHgrNEEkZe6PAno3AZiqG">
@@ -254,11 +254,12 @@
                 <stop offset="80%" stop-color="#96721c" data-page-node-id="WtrFill1Stop000000004" />
                 <stop offset="100%" stop-color="#805f16" data-page-node-id="WtrFill1Stop000000005" />
               </linearGradient>
-              <!-- 后层波浪：水面高光（2026-10-19 改为设计稿那种宽而柔的浅色水带） -->
+              <!-- 后层波浪（2026-10-19 三次调色）：必须是浅金，跟下面深金的水体拉开明度差，
+                   两条浪才看得出"一深一浅"。对应 v2 原始稿里 rgba(240,207,122,.45) 那层的角色 -->
               <linearGradient id="waterCrest" x1="0" y1="0" x2="0" y2="1" data-page-node-id="WtrCrest1Grad000000001">
-                <stop offset="0%" stop-color="#a57a16" data-page-node-id="WtrCrest1Stop00000001" />
-                <stop offset="55%" stop-color="#997012" data-page-node-id="WtrCrest1Stop00000002" />
-                <stop offset="100%" stop-color="#8c660f" data-page-node-id="WtrCrest1Stop00000003" />
+                <stop offset="0%" stop-color="#eccc70" data-page-node-id="WtrCrest1Stop00000001" />
+                <stop offset="45%" stop-color="#dfb954" data-page-node-id="WtrCrest1Stop00000002" />
+                <stop offset="100%" stop-color="#c89e39" data-page-node-id="WtrCrest1Stop00000003" />
               </linearGradient>
               <!-- 最远那层浪用浅奶金色（2026-10-19）：它只在水带上方露出一条，
                    若沿用琥珀色，40% 透明度压在深红底上会发灰发脏 -->
@@ -521,7 +522,7 @@
       </div>
     </div>
 
-        <script src="app/js/data.js?v=20261019-15"></script>
-    <script type="module" src="app/js/main.js?v=20261019-15"></script>
+        <script src="app/js/data.js?v=20261019-16"></script>
+    <script type="module" src="app/js/main.js?v=20261019-16"></script>
   </body>
 </html>

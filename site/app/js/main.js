@@ -493,8 +493,15 @@
       }
       function drawWaves(pct) {
         const lv = H.CY + H.R_BALL - (2 * H.R_BALL * clamp(pct, 0, 100)) / 100;
-        wave1.setAttribute("d", wavePath(lv, 10));
-        if (wave2) wave2.setAttribute("d", wavePath(lv + 9, 13));
+        /* 浅色后层浪在水面上、深色主体浪压在它下方 13px（2026-10-19 三次调整）
+           v2 原参数是 wave1=lv / wave2=lv+9，两者相位相同、振幅 10 与 13，
+           算下来 wave1 永远压在 wave2 上面 6~12px（同相位差值恒为 -3f-9 < 0），
+           后层被完全遮死 —— 所以线上只剩一条浪。
+           改成 wave2=lv（浅金，波峰高）、wave1=lv+13（深金主体），
+           两层真实错开 11.5~14.5px，露出一道连续的水带；
+           液体顶仍由 wave2 决定（≈lv），水位不会被虚抬。 */
+        wave1.setAttribute("d", wavePath(lv + 13, 10));
+        if (wave2) wave2.setAttribute("d", wavePath(lv, 13));
       }
 
       /* 左右门店标签：y 由段中心角算出，与弧段严格对齐且左右镜像 */
