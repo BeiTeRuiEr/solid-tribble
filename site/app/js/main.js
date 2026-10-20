@@ -517,6 +517,32 @@
              <div class="t-line"><span class="t-val">—</span></div>`
           : `<div class="t-line"><span class="t-lab">今日数据</span></div>
              <div class="t-line"><span class="t-val">${fmtI(s.todayInit)}人&nbsp;/&nbsp;${fmt2(s.todayRev)}万元</span></div>`;
+      /* 「今日数据」宽度兜底（2026-10-20）：
+         .today 的真实可用宽度只有 ~128px —— 同一行前面还有色点 .dot，
+         所以能用的是 128 而不是 .store-label 的内容宽 147。
+         三位数人数 + 三位数业绩（999人 / 999.99万元 实测 139.6px）会超出去，
+         而 .t-line 是 overflow:hidden，超了直接裁字（「元」整个看不见）。
+         这里按实测文本宽等比缩字号兜底，只在超宽时生效，常态字号不变。 */
+      const BASE_VAL_U = 16; // 与 CSS 里 .t-val 的 font-size 保持一致
+      function fitTodayVal(el) {
+        const tv = el.querySelector(".t-val");
+        const line = tv && tv.closest(".t-line");
+        if (!tv || !line) return;
+        tv.style.fontSize = "";
+        const avail = line.clientWidth;
+        if (!avail) return;
+        const rg = document.createRange();
+        rg.selectNodeContents(tv);
+        const need = rg.getBoundingClientRect().width;
+        if (need > avail) {
+          const ratio = (avail - 3) / need; // 留 3px 呼吸位，别把「元」顶到框边
+          tv.style.fontSize = `calc(var(--u) * ${(BASE_VAL_U * ratio).toFixed(2)})`;
+        }
+      }
+      // 字体/布局稳定后再兜一次，避免首帧测量偏差
+      window.addEventListener("load", () =>
+        labels.forEach((el) => el && fitTodayVal(el)),
+      );
       HERO.forEach((s, i) => {
         const seg = SEGMENTS[i];
         const center = seg.start + H.SEG_SPAN / 2;
@@ -534,6 +560,7 @@
             <div class="today">${todayHTML(s)}</div>
           </div>`;
         heroMod.appendChild(el);
+        fitTodayVal(el);
         labels[i] = el;
       });
 
@@ -1224,7 +1251,16 @@
             labels[i].querySelector(".bar i").style.width =
               clamp(p, 0, 100) + "%";
             const tEl = labels[i].querySelector(".today");
-            if (tEl) tEl.innerHTML = todayHTML(s); // 心跳时同步今日初诊/今日业绩
+            /* 心跳同步今日初诊/今日业绩；文本没变就不重写 innerHTML，
+               否则每帧重建节点会丢掉 fitTodayVal 设的字号自适应 */
+            if (tEl) {
+              const html = todayHTML(s);
+              if (tEl.dataset.html !== html) {
+                tEl.innerHTML = html;
+                tEl.dataset.html = html;
+                fitTodayVal(labels[i]);
+              }
+            }
           });
           const hp = lerp(fromHero, target, k);
           drawWaves(hp);
