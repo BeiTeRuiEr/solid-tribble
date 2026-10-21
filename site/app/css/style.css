@@ -267,11 +267,11 @@
       .clock {
         position: absolute;
         right: var(--sp-4);
-        top: var(--sp-2);
+        top: calc(var(--sp-2) + 6px);
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 6px;
         line-height: 1.4;
       }
       .clock .t {
