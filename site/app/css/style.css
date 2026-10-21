@@ -267,15 +267,18 @@
       .clock {
         position: absolute;
         right: var(--sp-4);
-        top: calc(var(--sp-2) + 6px);
+        top: 0;
+        height: 88px;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: flex-end;
+        padding-bottom: 8px;
         gap: 6px;
         line-height: 1.4;
       }
       .clock .t {
-        font: 600 22px var(--num-font);
+        font: 600 28px/1.1 var(--num-font);
         color: var(--gold-num);
         letter-spacing: 1px;
       }
