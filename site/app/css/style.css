@@ -268,7 +268,10 @@
         position: absolute;
         right: var(--sp-4);
         top: var(--sp-2);
-        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
         line-height: 1.4;
       }
       .clock .t {
@@ -280,11 +283,6 @@
         font-size: var(--t5);
         color: var(--text-sub);
         letter-spacing: 2px;
-      }
-      .clock .slogan {
-        font-size: var(--t5);
-        color: var(--text-dim);
-        letter-spacing: 4px;
       }
       .h-sep {
         position: absolute;
