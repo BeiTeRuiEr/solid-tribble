@@ -302,7 +302,15 @@
             门店行却是 51.32 这种百分数（合计行又回到 0.416），
             所以按数值大小自动判别，不能一律 ×100。 */
       const storeNameFix = (s) => (s.length === 2 ? `${s[0]}　${s[1]}` : s);
-      const headText = (c) => c.replace(/_总和/g, "");
+      /* ④ 表头改名（2026-10-23 用户要求）：BI 的「市场各小组数据」把这列叫「其他业绩」，
+         但口径就是「市场数据」表的「再消费业绩(一年内)」——实测两张表该列合计都是
+         109,953.07，完全相等。同一个弹窗上下两张表叫法不一致容易误读，统一显示。
+         注：目前只有 groups 表有这个列名，其他表不受影响。 */
+      const HEAD_RENAME = { "其他业绩": "再消费业绩(一年内)" };
+      const headText = (c) => {
+        const base = c.replace(/_总和/g, "");
+        return HEAD_RENAME[base] || base;
+      };
       const isRateCol = (c) => /完成率/.test(c);
       const fmtRate = (v) => {
         if (v === "" || v == null) return "—";
