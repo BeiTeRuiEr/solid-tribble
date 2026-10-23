@@ -35,7 +35,11 @@ env:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  # 2026-10-23 改 true:本仓库是 5 分钟一次的高频抓取,false 会让排队越积越长 ——
+  # 前一次卡在 Install deps 时,后面每次触发都进 pending,而新触发又会把旧 pending 顶掉,
+  # 表现为 Actions 页面永远有一条 Pending 卡着、永远轮不到(实测 #5096/#5097 被 cancelled)。
+  # 高频抓取只关心最新一次,旧运行直接让位,队列永远不会堆积。
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -53,12 +57,10 @@ jobs:
           cache: pip # 缓存 pip 下载,省几秒
           cache-dependency-path: scripts/requirements.txt
 
-      # 缓存 Playwright 的 chromium(约160MB),命中后跳过下载,是提速大头
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('scripts/requirements.txt') }}
+      # 2026-10-23 删除 actions/cache 的 Playwright 浏览器缓存(用户要求:不读任何缓存)。
+      # 说明:这个 cache 只存 ~/.cache/ms-playwright 里的 chromium 二进制,不含任何 BI 数据/
+      # Cookie/profile(脚本每次 tempfile.mkdtemp() 新建空 profile),它不影响数据新鲜度;
+      # 但去掉后行为更确定 —— 每次都是当天新鲜的浏览器与全新环境。
 
       # 判定本次抓什么(要提前知道,才能决定装不装浏览器):
       # 不用 github.event_name / github.event.schedule 判断:实测本仓库的定时(cron)运行
@@ -113,17 +115,25 @@ jobs:
           echo "UTC=$(date -u +%H:%M) input='${INPUT_MODE}' override='${MODE_OVERRIDE}' → FETCH_MODE=$M"
 
       - name: Install deps
+        # 必须单独封顶:不给这步设超时,apt/下载一卡就会一直占着 pages 并发组直到 build 的
+        # 20 分钟总超时,期间所有定时触发全部作废(2026-10-23 事故就是卡在这一步)。
+        timeout-minutes: 8
         run: |
           pip install -r scripts/requirements.txt
           # 浏览器必须常装(2026-10-13 起):main 模式虽然只做接口重放,但每次都要先开一次
           # 浏览器重抓模板 —— BI 把结果缓存在「抓模板时的报表实例」上,重放旧模板永远是旧快照
-          # (实测数字能落后好几小时)。chromium 走 Cache Playwright browsers 缓存,
-          # 装依赖约 18 秒(以前 main 模式跳过安装省下的时间,换来的是数据不新鲜)。
-          playwright install --with-deps chromium
+          # (实测数字能落后好几小时)。
+          # 2026-10-23:先不带 --with-deps 装。--with-deps 每次都要 apt-get update/install,
+          # 是这次卡 10+ 分钟的元凶;ubuntu-latest 镜像本身已带 chromium 所需系统库,
+          # 不带 deps 只做下载(约 15~25 秒),真缺库才回退走 apt。全程不读任何缓存。
+          playwright install chromium || playwright install --with-deps chromium
 
       - name: Fetch tables
         id: fetch
         continue-on-error: true # 失败不直接判死,给 fallback 一个装浏览器重试的机会
+        # 2026-10-23 加:这步是纯网络 IO(登录 + 重抓模板 + 取数),正常约 60~90 秒。
+        # 没有超时的话,BI 侧不响应会一直挂着,把 pages 并发组占死。
+        timeout-minutes: 8
         env:
           BI_USER: ${{ secrets.BI_USER }}
           BI_PASS: ${{ secrets.BI_PASS }}
@@ -139,6 +149,7 @@ jobs:
       # 重放方案失败再退回老方案 fetch_data_dom.py(读 DOM),保证看板不断数。
       - name: Fallback (install browser and retry)
         if: steps.fetch.outcome != 'success'
+        timeout-minutes: 12   # 兜底路径要装 deps + 连跑两个脚本,但也不能无限拖
         env:
           BI_USER: ${{ secrets.BI_USER }}
           BI_PASS: ${{ secrets.BI_PASS }}
